@@ -74,6 +74,7 @@ As seguintes decisões estão aprovadas e não devem voltar a ser tratadas como 
 - uma unidade pode existir temporariamente sem profissionais;
 - cardinalidades descritas na seção 5 devem ser respeitadas;
 - o conjunto de status de exame é fechado;
+- `Agendamento.data` armazena data e horário;
 - unidades e profissionais devem ser desativados, e não excluídos fisicamente;
 - usuários são desativados por meio do campo `is_active` no Django Admin;
 - a API REST deve usar Django REST Framework, com detalhamento incremental posterior.

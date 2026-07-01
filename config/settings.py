@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "usuarios",
     "rede_saude",
+    "exames",
     "rest_framework",
 ]
 
