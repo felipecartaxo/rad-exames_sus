@@ -1,0 +1,79 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 20rem;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: var(--color-background-secondary);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+h1,
+h2,
+h3 {
+  margin-block: 0 1rem;
+  color: var(--color-heading);
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: clamp(1.75rem, 4vw, 2rem);
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+p {
+  margin-block: 0 1rem;
+}
+
+a {
+  color: var(--color-primary);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--color-primary-dark);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-warning);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  top: 0.5rem;
+  left: 0.5rem;
+  padding: 0.75rem 1rem;
+  transform: translateY(-150%);
+  background: var(--color-heading);
+  color: var(--color-text-on-dark);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+

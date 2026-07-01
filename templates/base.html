@@ -1,0 +1,31 @@
+{% load static i18n %}
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>{% block title %}ExameSUS{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo-principal">{% trans "Ir para o conteúdo principal" %}</a>
+
+    {% include "includes/header.html" %}
+
+    <main id="conteudo-principal" class="site-main" tabindex="-1">
+      <div class="container">
+        {% block breadcrumb %}{% endblock %}
+        {% include "includes/messages.html" %}
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+
+    {% include "includes/footer.html" %}
+  </body>
+</html>
+

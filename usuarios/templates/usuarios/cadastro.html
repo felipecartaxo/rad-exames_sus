@@ -1,57 +1,41 @@
-<!doctype html>
-<html lang="pt-BR">
-  {% load i18n %}
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% trans "Cadastro de cidadão" %} | ExameSUS</title>
-  </head>
-  <body>
-    <main>
-      <h1>{% trans "Crie sua conta" %}</h1>
-      <p>{% trans "Informe seus dados para acessar o ExameSUS." %}</p>
+{% extends "base.html" %}
+{% load i18n %}
 
-      {% if messages %}
-        <div aria-live="polite">
-          {% for message in messages %}
-            <p role="status">{{ message }}</p>
-          {% endfor %}
+{% block title %}{% trans "Cadastro de cidadão" %} | ExameSUS{% endblock %}
+
+{% block content %}
+  <section class="auth-card" aria-labelledby="titulo-cadastro">
+    <h1 id="titulo-cadastro">{% trans "Crie sua conta" %}</h1>
+    <p>{% trans "Informe seus dados para acessar o ExameSUS." %}</p>
+
+    {% if form.errors %}
+      <div class="error-summary" role="alert" tabindex="-1">
+        <h2>{% trans "Revise os dados informados" %}</h2>
+        <p>{% trans "Corrija os campos indicados abaixo." %}</p>
+      </div>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% for hidden_field in form.hidden_fields %}{{ hidden_field }}{% endfor %}
+
+      {% for field in form.visible_fields %}
+        <div class="form-field">
+          {{ field.label_tag }}
+          {{ field }}
+          {% if field.help_text %}
+            <div class="help-text" id="{{ field.auto_id }}_helptext">{{ field.help_text|safe }}</div>
+          {% endif %}
+          {% for error in field.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
         </div>
-      {% endif %}
+      {% endfor %}
 
-      {% if form.errors %}
-        <div role="alert" tabindex="-1">
-          <h2>{% trans "Revise os dados informados" %}</h2>
-          <p>{% trans "Corrija os campos indicados abaixo." %}</p>
-        </div>
-      {% endif %}
+      {% for error in form.non_field_errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
 
-      <form method="post" novalidate>
-        {% csrf_token %}
-
-        {% for hidden_field in form.hidden_fields %}
-          {{ hidden_field }}
-        {% endfor %}
-
-        {% for field in form.visible_fields %}
-          <div>
-            {{ field.label_tag }}
-            {{ field }}
-            {% if field.help_text %}
-              <div id="{{ field.auto_id }}_helptext">{{ field.help_text|safe }}</div>
-            {% endif %}
-            {% for error in field.errors %}
-              <p role="alert">{{ error }}</p>
-            {% endfor %}
-          </div>
-        {% endfor %}
-
-        {% for error in form.non_field_errors %}
-          <p role="alert">{{ error }}</p>
-        {% endfor %}
-
+      <div class="form-actions">
         <button type="submit">{% trans "Criar conta" %}</button>
-      </form>
-    </main>
-  </body>
-</html>
+        <a href="{% url 'usuarios:login' %}">{% trans "Já tenho uma conta" %}</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

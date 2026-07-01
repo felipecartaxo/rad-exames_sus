@@ -1,22 +1,20 @@
+{% extends "base.html" %}
 {% load i18n %}
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% trans "Conta" %} | ExameSUS</title>
-  </head>
-  <body>
-    <main>
-      <h1>{% blocktrans with nome=request.user.nome %}Olá, {{ nome }}{% endblocktrans %}</h1>
-      <p>{% trans "Sua autenticação foi realizada com sucesso." %}</p>
-      <p>{% trans "As funcionalidades do seu perfil serão disponibilizadas nas próximas entregas." %}</p>
 
-      <form method="post" action="{% url 'usuarios:logout' %}">
-        {% csrf_token %}
-        <button type="submit">{% trans "Sair" %}</button>
-      </form>
-    </main>
-  </body>
-</html>
+{% block title %}{% trans "Conta" %} | ExameSUS{% endblock %}
 
+{% block breadcrumb %}
+  <nav class="breadcrumb" aria-label="{% trans 'Navegação estrutural' %}">
+    <ol>
+      <li aria-current="page">{% trans "Conta" %}</li>
+    </ol>
+  </nav>
+{% endblock %}
+
+{% block content %}
+  <section class="content-card" aria-labelledby="titulo-conta">
+    <h1 id="titulo-conta">{% blocktrans with nome=request.user.nome %}Olá, {{ nome }}{% endblocktrans %}</h1>
+    <p>{% trans "Sua autenticação foi realizada com sucesso." %}</p>
+    <p>{% trans "As funcionalidades do seu perfil serão disponibilizadas nas próximas entregas." %}</p>
+  </section>
+{% endblock %}

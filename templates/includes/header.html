@@ -1,0 +1,29 @@
+{% load i18n %}
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="{% if request.user.is_authenticated %}{% url 'usuarios:inicio' %}{% else %}{% url 'usuarios:login' %}{% endif %}" aria-label="{% trans 'ExameSUS — página inicial' %}">
+      <span class="brand-mark" aria-hidden="true">+</span>
+      <span>ExameSUS</span>
+    </a>
+
+    <nav class="primary-navigation" aria-label="{% trans 'Navegação principal' %}">
+      {% if request.user.is_authenticated %}
+        {% if request.user.is_superuser %}
+          <a href="{% url 'admin:index' %}">{% trans "Administração" %}</a>
+        {% endif %}
+        <div class="user-summary">
+          {% include "includes/notification_bell.html" %}
+          <span class="user-name">{{ request.user.nome }}</span>
+        </div>
+        <form method="post" action="{% url 'usuarios:logout' %}">
+          {% csrf_token %}
+          <button class="button button-tertiary" type="submit">{% trans "Sair" %}</button>
+        </form>
+      {% else %}
+        <a href="{% url 'usuarios:login' %}">{% trans "Entrar" %}</a>
+        <a class="button button-secondary" href="{% url 'usuarios:cadastro' %}">{% trans "Criar conta" %}</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+
