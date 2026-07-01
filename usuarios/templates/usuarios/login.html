@@ -1,0 +1,54 @@
+{% load i18n %}
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% trans "Entrar" %} | ExameSUS</title>
+  </head>
+  <body>
+    <main>
+      <h1>{% trans "Entre no ExameSUS" %}</h1>
+      <p>{% trans "Use seu CPF e sua senha para acessar o sistema." %}</p>
+
+      {% if messages %}
+        <div aria-live="polite">
+          {% for message in messages %}
+            <p role="status">{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if form.errors %}
+        <div role="alert" tabindex="-1">
+          <p>{% trans "CPF ou senha inválidos." %}</p>
+        </div>
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if next %}
+          <input type="hidden" name="next" value="{{ next }}">
+        {% endif %}
+
+        {% for field in form.visible_fields %}
+          <div>
+            {{ field.label_tag }}
+            {{ field }}
+            {% for error in field.errors %}
+              <p role="alert">{{ error }}</p>
+            {% endfor %}
+          </div>
+        {% endfor %}
+
+        <button type="submit">{% trans "Entrar" %}</button>
+      </form>
+
+      <p>
+        {% trans "Ainda não possui uma conta?" %}
+        <a href="{% url 'usuarios:cadastro' %}">{% trans "Cadastre-se" %}</a>
+      </p>
+    </main>
+  </body>
+</html>
+

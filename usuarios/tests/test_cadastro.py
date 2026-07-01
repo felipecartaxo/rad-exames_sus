@@ -89,7 +89,7 @@ class CadastroCidadaoViewTests(TestCase):
             follow=True,
         )
 
-        self.assertRedirects(resposta, self.url)
+        self.assertRedirects(resposta, reverse("usuarios:login"))
         self.assertContains(resposta, "Cadastro realizado com sucesso.")
         usuario = Usuario.objects.get(cpf="52998224725")
         self.assertEqual(usuario.tipo, Usuario.Tipo.CIDADAO)
@@ -98,4 +98,3 @@ class CadastroCidadaoViewTests(TestCase):
         resposta = self.client.get(self.url)
 
         self.assertNotContains(resposta, 'name="tipo"')
-

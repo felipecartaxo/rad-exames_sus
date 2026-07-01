@@ -1,0 +1,22 @@
+{% load i18n %}
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% trans "Conta" %} | ExameSUS</title>
+  </head>
+  <body>
+    <main>
+      <h1>{% blocktrans with nome=request.user.nome %}Olá, {{ nome }}{% endblocktrans %}</h1>
+      <p>{% trans "Sua autenticação foi realizada com sucesso." %}</p>
+      <p>{% trans "As funcionalidades do seu perfil serão disponibilizadas nas próximas entregas." %}</p>
+
+      <form method="post" action="{% url 'usuarios:logout' %}">
+        {% csrf_token %}
+        <button type="submit">{% trans "Sair" %}</button>
+      </form>
+    </main>
+  </body>
+</html>
+

@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.utils.translation import gettext_lazy as _
 
 from .managers import normalizar_cpf
@@ -49,3 +49,28 @@ class CadastroCidadaoForm(UserCreationForm):
             usuario.save()
         return usuario
 
+
+class LoginCpfForm(AuthenticationForm):
+    username = forms.CharField(
+        label=_("CPF"),
+        max_length=14,
+        widget=forms.TextInput(
+            attrs={
+                "autocomplete": "username",
+                "inputmode": "numeric",
+                "autofocus": True,
+            }
+        ),
+    )
+    password = forms.CharField(
+        label=_("Senha"),
+        strip=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "current-password"}),
+    )
+    error_messages = {
+        "invalid_login": _("CPF ou senha inválidos."),
+        "inactive": _("CPF ou senha inválidos."),
+    }
+
+    def clean_username(self):
+        return normalizar_cpf(self.cleaned_data["username"])
