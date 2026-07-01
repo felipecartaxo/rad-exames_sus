@@ -26,7 +26,7 @@ class LayoutCompartilhadoTests(TestCase):
         resposta = self.client.get(reverse("usuarios:inicio"))
 
         self.assertContains(resposta, usuario.nome)
-        self.assertContains(resposta, "Notificações — recurso em preparação")
+        self.assertContains(resposta, "Nenhuma notificação pendente")
         self.assertContains(resposta, "Navegação estrutural")
 
     def test_cabecalho_anonimo_exibe_acoes_de_entrada_e_cadastro(self):
@@ -34,4 +34,3 @@ class LayoutCompartilhadoTests(TestCase):
 
         self.assertContains(resposta, reverse("usuarios:login"))
         self.assertContains(resposta, reverse("usuarios:cadastro"))
-

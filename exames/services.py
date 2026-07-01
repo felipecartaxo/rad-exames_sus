@@ -46,5 +46,8 @@ def transicionar_status(exame, novo_status):
     validar_transicao_status(exame_bloqueado.status, novo_status)
     exame_bloqueado.status = novo_status
     exame_bloqueado.save(update_fields=["status"])
-    return exame_bloqueado
+    if novo_status == Exame.Status.RESULTADO_DISPONIVEL:
+        from notificacoes.services import criar_notificacao_resultado_disponivel
 
+        criar_notificacao_resultado_disponivel(exame_bloqueado)
+    return exame_bloqueado

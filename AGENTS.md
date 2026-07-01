@@ -70,6 +70,7 @@ As seguintes decisões estão aprovadas e não devem voltar a ser tratadas como 
 - comparação de resultados foi removida do escopo;
 - notificações serão apresentadas por sino e badge numérica ao lado do nome do usuário;
 - o Codex pode definir o evento de domínio mais adequado para gerar as notificações, desde que documente a decisão e permaneça na pilha autorizada;
+- uma notificação única é criada explicitamente quando o exame transiciona para `RESULTADO_DISPONIVEL`, orientando o cidadão a consultar o resultado e realizar o acompanhamento necessário;
 - apenas `UnidadeSaude.contato` e `Profissional.especialidade` podem ser nulos entre os campos de domínio já definidos;
 - uma unidade pode existir temporariamente sem profissionais;
 - cardinalidades descritas na seção 5 devem ser respeitadas;

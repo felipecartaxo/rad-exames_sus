@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "usuarios",
     "rede_saude",
     "exames",
+    "notificacoes",
     "rest_framework",
 ]
 
@@ -55,6 +56,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "notificacoes.context_processors.notificacoes_nao_lidas",
             ],
         },
     },

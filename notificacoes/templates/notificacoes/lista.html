@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Notificações" %} | ExameSUS{% endblock %}
+
+{% block breadcrumb %}
+  <nav class="breadcrumb" aria-label="{% trans 'Navegação estrutural' %}">
+    <ol>
+      <li><a href="{% url 'usuarios:inicio' %}">{% trans "Conta" %}</a></li>
+      <li aria-current="page">{% trans "Notificações" %}</li>
+    </ol>
+  </nav>
+{% endblock %}
+
+{% block content %}
+  <header class="page-header page-header-actions">
+    <div>
+      <h1>{% trans "Notificações" %}</h1>
+      <p>{% trans "Acompanhe os avisos relacionados aos seus exames." %}</p>
+    </div>
+    {% if notificacoes_nao_lidas %}
+      <form method="post" action="{% url 'notificacoes:marcar_lidas' %}">
+        {% csrf_token %}
+        <button class="button button-secondary" type="submit">{% trans "Marcar todas como lidas" %}</button>
+      </form>
+    {% endif %}
+  </header>
+
+  <ul class="record-list" aria-label="{% trans 'Notificações do cidadão' %}">
+    {% for notificacao in notificacoes %}
+      <li class="record-card notification-card{% if not notificacao.lida %} notification-unread{% endif %}">
+        <div class="record-card-heading">
+          <h2>{{ notificacao.exame.tipo }}</h2>
+          {% if notificacao.lida %}
+            <span class="status-badge status-inactive">{% trans "Lida" %}</span>
+          {% else %}
+            <span class="status-badge status-active">{% trans "Nova" %}</span>
+          {% endif %}
+        </div>
+        <p>{{ notificacao.mensagem }}</p>
+      </li>
+    {% empty %}
+      <li class="empty-state">
+        <h2>{% trans "Nenhuma notificação" %}</h2>
+        <p>{% trans "Você não possui notificações no momento." %}</p>
+      </li>
+    {% endfor %}
+  </ul>
+
+  {% include "components/pagination.html" %}
+{% endblock %}
+
