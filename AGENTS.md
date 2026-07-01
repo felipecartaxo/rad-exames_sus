@@ -142,12 +142,14 @@ O projeto deve seguir a arquitetura **MVT do Django**.
 - Não coloque regras de negócio importantes apenas no JavaScript ou no template.
 - A validação do servidor é obrigatória, mesmo quando existir validação no navegador.
 
----
 
-## Estrutura inicialmente pensada
+### 4.1 Estrutura modular obrigatória
 
-A seguir, segue a estrutura que imaginei, mas não deve ser seguida à risca. O Codex pode propor ajustes, desde que justifique e aguarde aprovação.
+O ExameSUS deve ser desenvolvido como um **monólito modular em Django**: um único projeto, um único banco de dados e aplicações separadas por domínio. Não adotar microsserviços, frontend desacoplado ou arquitetura distribuída sem solicitação explícita.
 
+A estrutura abaixo representa o **estado final pretendido**. Ela não autoriza a criação antecipada de todos os diretórios e arquivos. Cada aplicação, template, endpoint, serviço e conjunto de testes deve ser criado apenas quando a etapa correspondente entrar no escopo aprovado.
+
+```text
 ExameSUS/
 ├── AGENTS.md
 ├── README.md
@@ -221,7 +223,7 @@ ExameSUS/
 │   ├── urls.py
 │   └── views.py
 │
-├── notificacoes/                  # Criar somente na fase do RF006
+├── notificacoes/                  # Criar apenas ao iniciar o RF006
 │   ├── migrations/
 │   ├── templates/
 │   │   └── notificacoes/
@@ -268,6 +270,216 @@ ExameSUS/
     ├── requisitos.md
     ├── modelo-de-dados.md
     └── api.md
+```
+
+Arquivos ilustrados na árvore podem ser omitidos enquanto não forem necessários. Não criar arquivos vazios apenas para reproduzir a estrutura.
+
+### 4.2 Responsabilidades das aplicações
+
+#### `config`
+
+Deve conter apenas configurações globais do projeto:
+
+- configurações do Django;
+- URLs principais;
+- ASGI e WSGI;
+- configuração de templates, arquivos estáticos, i18n e Django REST Framework;
+- definição de `AUTH_USER_MODEL = "usuarios.Usuario"` antes das migrations iniciais;
+- configurações globais de login e redirecionamento.
+
+Prefixos de URL recomendados:
+
+```text
+/admin/             Painel administrativo padrão do Django
+/conta/             Autocadastro, login e logout
+/usuarios/          Funcionalidades autorizadas para usuários
+/exames/            Lista, histórico e detalhes de exames
+/notificacoes/      Notificações do cidadão
+/api/v1/            API REST versionada
+```
+
+O prefixo `/api/v1/` deve ser adotado quando a primeira rota da API for aprovada.
+
+#### `usuarios`
+
+Responsável por:
+
+- modelo customizado `Usuario`;
+- `UsuarioManager`, incluindo `create_user()` e `create_superuser()`;
+- autenticação por CPF e senha;
+- autocadastro do cidadão;
+- logout;
+- listagem paginada de usuários;
+- perfis `CIDADAO` e `SERVIDOR`;
+- ativação e desativação por `is_active`;
+- forms, views e permissões relacionadas a usuários.
+
+`tipo` identifica o perfil de domínio, mas não substitui as permissões nativas do Django. Operações sensíveis podem exigir simultaneamente o perfil adequado e a permissão Django correspondente. `is_staff` deve permanecer reservado ao acesso ao Django Admin; um servidor comum não precisa ser `is_staff`.
+
+#### `rede_saude`
+
+Responsável por:
+
+- `UnidadeSaude`;
+- `Profissional`;
+- validações desses modelos;
+- configuração de ambos no Django Admin;
+- desativação e reativação;
+- filtragem de unidades ativas para novos vínculos.
+
+Não criar views ou templates públicos para esses cadastros enquanto RF007 e RF008 permanecerem atendidos pelo Django Admin.
+
+O `admin.py` deve, quando os respectivos requisitos forem implementados, oferecer listagem, busca, filtros, edição, desativação e reativação, sem exclusão física.
+
+#### `exames`
+
+Responsável por:
+
+- `Agendamento`;
+- `Exame`;
+- enum e fluxo de status;
+- validação das transições;
+- lista de exames do cidadão;
+- histórico;
+- detalhes e resultados;
+- consultas restritas ao usuário autenticado;
+- API relacionada a exames, quando aprovada.
+
+`Agendamento` e `Exame` devem permanecer na mesma aplicação por integrarem o mesmo fluxo de domínio. Não separá-los em aplicações distintas sem necessidade real e aprovação.
+
+A lógica reutilizável de transição de status deve ficar centralizada, preferencialmente em função ou serviço como `transicionar_status(exame, novo_status, usuario_responsavel)`, quando houver mais de uma interface alterando o status. Essa operação deve validar o fluxo, persistir de forma transacional e disparar a criação de notificação quando a regra aprovada exigir.
+
+Como `Exame` e `Agendamento` armazenam usuário e unidade, validar no backend que:
+
+```text
+exame.usuario_id == exame.agendamento.usuario_id
+exame.unidade_id == exame.agendamento.unidade_id
+```
+
+Essa validação evita registros contraditórios e não modifica o modelo aprovado.
+
+Não impor silenciosamente que `exame.profissional.unidade_id == exame.unidade_id`. Essa regra depende de decisão específica antes da implementação do fluxo que cria ou altera exames.
+
+#### `notificacoes`
+
+Criar somente quando o RF006 for iniciado.
+
+Responsável por:
+
+- modelo mínimo de notificação, caso necessário;
+- persistência e estado de leitura;
+- consulta das notificações do cidadão;
+- página de notificações;
+- serviço explícito de criação;
+- badge de notificações não lidas no cabeçalho.
+
+Um context processor pode fornecer a quantidade de notificações não lidas aos templates globais. A consulta deve ser executada apenas para usuário autenticado e não pode expor notificações de terceiros.
+
+Preferir chamadas explícitas em `notificacoes/services.py` a sinais do Django. Não usar signals para ocultar efeitos colaterais, salvo justificativa concreta e aprovação.
+
+### 4.3 Templates e componentes compartilhados
+
+Todas as páginas da aplicação comum devem herdar de `templates/base.html`.
+
+O template base deve concentrar:
+
+- cabeçalho;
+- identificação do usuário;
+- sino de notificações;
+- área de breadcrumb;
+- mensagens do Django;
+- conteúdo principal;
+- rodapé.
+
+Elementos repetidos devem ser extraídos para includes ou componentes, especialmente:
+
+- paginação;
+- badge de status;
+- breadcrumb;
+- alertas e mensagens;
+- estado vazio;
+- sino de notificações.
+
+O mesmo componente de status deve ser usado em lista, histórico e detalhes para preservar texto, cor e acessibilidade.
+
+### 4.4 Organização de CSS e JavaScript
+
+A organização visual recomendada é:
+
+- `tokens.css`: cores, espaçamentos, tipografia e variáveis;
+- `base.css`: normalização, elementos HTML, tipografia e acessibilidade;
+- `layout.css`: container, cabeçalho, navegação, grids e rodapé;
+- `components.css`: botões, alertas, badges, formulários, tabelas, paginação e breadcrumbs;
+- `pages/`: apenas estilos específicos que não possam ser compartilhados.
+
+Não concentrar todo o CSS em um arquivo excessivamente grande e não criar fragmentação desnecessária em dezenas de arquivos mínimos.
+
+O JavaScript deve permanecer pequeno e progressivo. Regras de negócio, autorização e validações essenciais devem funcionar no servidor e não podem depender exclusivamente de JavaScript.
+
+### 4.5 Organização da API REST
+
+Não criar uma aplicação central genérica chamada `api` para concentrar todos os recursos.
+
+Quando um domínio receber endpoints aprovados, criar um subpacote dentro da própria aplicação, por exemplo:
+
+```text
+exames/
+└── api/
+    ├── __init__.py
+    ├── serializers.py
+    ├── permissions.py
+    ├── urls.py
+    └── views.py
+```
+
+Aplicar a mesma abordagem em `usuarios` ou `notificacoes` somente quando existirem endpoints aprovados para esses domínios.
+
+As URLs devem ser agregadas em `config/urls.py` sob `/api/v1/`. A API deve reutilizar as regras de domínio existentes, e não manter uma segunda implementação das mesmas regras.
+
+### 4.6 Organização dos testes
+
+Os testes devem ficar dentro da aplicação responsável pelo comportamento testado, em pacote `tests/`.
+
+Separar por responsabilidade quando houver volume suficiente, por exemplo:
+
+```text
+exames/tests/
+├── test_models.py
+├── test_status.py
+├── test_views.py
+├── test_permissions.py
+└── test_api.py
+```
+
+Começar com `django.test.TestCase` e `setUpTestData()` quando adequados. Não adicionar `pytest`, `factory_boy` ou bibliotecas equivalentes sem aprovação.
+
+Os testes devem acompanhar cada funcionalidade. A etapa final de testes é de consolidação, não de criação tardia de toda a suíte.
+
+### 4.7 Direção das dependências
+
+A direção recomendada é:
+
+```text
+usuarios ───────────────┐
+                        ├──► exames
+rede_saude ─────────────┘
+
+usuarios ───────────────┐
+                        ├──► notificacoes
+exames ─────────────────┘
+```
+
+Regras:
+
+- `usuarios` não deve depender de `exames`;
+- `rede_saude` não deve depender de `exames`;
+- `exames` pode referenciar usuários, unidades e profissionais;
+- `notificacoes` pode referenciar usuário e, se necessário, exame;
+- uma aplicação não deve importar views ou forms de outra aplicação;
+- usar referências por string nos relacionamentos entre models quando isso evitar importações circulares;
+- evitar ciclos de dependência entre módulos.
+
+---
 
 ## 5. Modelo de dados autorizado
 
@@ -1080,32 +1292,122 @@ Esses pontos não impedem a configuração inicial do Django REST Framework, mas
 
 ---
 
-## 18. Ordem sugerida de evolução
+## 18. Ordem obrigatória de construção
 
-A ordem abaixo é uma recomendação e pode ser alterada pelo responsável. Cada item continua sendo uma entrega separada.
+A estrutura deve surgir gradualmente. Cada item abaixo é uma entrega separada e deve ser implementado, testado, apresentado e validado antes do próximo. O responsável pode alterar a ordem por solicitação explícita.
 
-1. definir o modelo customizado de usuário antes das migrations iniciais;
-2. configurar a base do projeto Django e comprovar MVT;
-3. implementar os modelos e migrations já aprovados;
-4. configurar o Django Admin para unidades, profissionais e usuários;
-5. implementar RF002 — autocadastro do cidadão com CPF e senha;
-6. implementar RF001 — login por CPF e senha;
-7. criar o layout base, incluindo cabeçalho, nome do usuário e sino;
-8. implementar RF003 — lista paginada de usuários para servidor autorizado;
-9. implementar RF007 — administração de unidades no Django Admin;
-10. implementar RF008 — administração de profissionais no Django Admin;
-11. implementar RF004 — lista de exames do cidadão;
-12. implementar RF005 — histórico de exames, sem comparação;
-13. definir e documentar a regra interna de notificações conforme a autonomia da seção RF006;
-14. implementar RF006 — lembretes e badge de notificações;
-15. consolidar RF009 em todos os fluxos;
-16. implementar a API REST, um recurso por vez e após validação;
-17. consolidar i18n;
-18. consolidar RF010 e a suíte de testes;
-19. revisar todos os critérios acadêmicos;
-20. somente então avaliar funcionalidades opcionais.
+1. **Preparar o repositório e a base do projeto**
+   - criar ou revisar `config`, `manage.py`, dependências mínimas e configurações básicas;
+   - configurar templates, static, locale e banco de dados sem antecipar funcionalidades;
+   - comprovar o funcionamento inicial do projeto com `check` e teste básico.
 
-Testes, autorização, acessibilidade e identidade visual devem acompanhar cada etapa, não ser deixados exclusivamente para o fim.
+2. **Criar a aplicação `usuarios` e o modelo customizado de usuário**
+   - definir `Usuario`, `UsuarioManager` e `AUTH_USER_MODEL` antes das migrations iniciais;
+   - implementar CPF como `USERNAME_FIELD`;
+   - garantir suporte a `createsuperuser` com `tipo=SERVIDOR`;
+   - criar e testar as migrations iniciais.
+
+3. **Criar a aplicação `rede_saude` e implementar `UnidadeSaude`**
+   - criar somente o modelo, migration, validações e testes referentes à unidade;
+   - não implementar `Profissional` no mesmo passo.
+
+4. **Implementar `Profissional` em `rede_saude`**
+   - adicionar o modelo, relacionamento com unidade, validações, migration e testes;
+   - respeitar cargo obrigatório, especialidade opcional e desativação lógica.
+
+5. **Criar a aplicação `exames` e implementar `Agendamento`**
+   - criar somente o modelo, relações, migration, validações e testes do agendamento;
+   - não implementar `Exame` antecipadamente.
+
+6. **Implementar `Exame` e o fluxo de status**
+   - criar o modelo e a migration;
+   - implementar as transições permitidas em ponto centralizado;
+   - validar a consistência entre exame e agendamento;
+   - testar transições válidas, inválidas e estados finais.
+
+7. **Configurar o Django Admin**
+   - registrar e configurar usuários, unidades e profissionais;
+   - atender RF007 e RF008 com listagem, busca, filtros, edição, desativação e reativação;
+   - impedir exclusão física;
+   - preservar o uso do painel padrão do Django.
+
+8. **Implementar RF002 — autocadastro do cidadão**
+   - criar uma única tela de cadastro;
+   - validar CPF, senha e confirmação;
+   - criar sempre `tipo=CIDADAO`;
+   - adicionar testes de formulário, view e persistência.
+
+9. **Implementar RF001 — login por CPF e senha**
+   - criar uma única tela de login;
+   - configurar autenticação, sessão, redirecionamentos e logout;
+   - testar credenciais válidas, inválidas e usuário inativo.
+
+10. **Criar o layout compartilhado**
+    - implementar `base.html`, cabeçalho, rodapé, mensagens e estrutura responsiva;
+    - preparar o local do nome do usuário e do sino, sem criar a lógica de notificações antes do RF006;
+    - criar componentes compartilhados apenas conforme forem usados.
+
+11. **Implementar RF003 — lista paginada de usuários**
+    - restringir a servidor autorizado;
+    - implementar paginação no backend, ordenação e estado vazio;
+    - criar apenas a tela necessária e seus testes.
+
+12. **Implementar RF004 — lista de exames do cidadão**
+    - exibir somente os exames do cidadão autenticado;
+    - usar o componente compartilhado de status;
+    - implementar paginação se o volume ou requisito aprovado exigir;
+    - testar isolamento de dados e autorização.
+
+13. **Implementar RF005 — histórico de exames**
+    - criar a tela de histórico sem comparação de dados;
+    - exibir resultado ou mensagem de indisponibilidade;
+    - testar ordenação e isolamento por cidadão.
+
+14. **Criar a aplicação `notificacoes` e implementar RF006**
+    - definir e documentar o evento de geração autorizado;
+    - criar apenas o modelo mínimo necessário;
+    - implementar persistência, leitura, página de notificações, context processor, sino e badge;
+    - evitar signals, tarefas em background e integrações externas, salvo aprovação.
+
+15. **Consolidar RF009 — autenticação e autorização**
+    - revisar todas as páginas e operações já implementadas;
+    - confirmar restrições por perfil, objeto e usuário inativo;
+    - corrigir lacunas e ampliar testes de segurança funcional.
+
+16. **Implementar a API REST progressivamente**
+    - definir o primeiro recurso com o responsável;
+    - criar o subpacote `api/` apenas na aplicação correspondente;
+    - adotar `/api/v1/`;
+    - implementar um endpoint ou conjunto mínimo coerente por vez;
+    - aplicar as mesmas regras de autorização das páginas HTML;
+    - não gerar CRUDs completos automaticamente.
+
+17. **Consolidar i18n**
+    - revisar textos Python, templates e JavaScript existentes;
+    - gerar e validar catálogos conforme a estratégia aprovada;
+    - demonstrar ao menos um cenário de tradução funcional.
+
+18. **Consolidar RF010 e a suíte de testes**
+    - revisar cobertura dos requisitos principais;
+    - completar testes ausentes identificados na revisão;
+    - executar a suíte completa e documentar os comandos.
+
+19. **Revisar critérios acadêmicos e documentação**
+    - confirmar MVT, paginação, autenticação, autorização, API REST, testes e i18n;
+    - atualizar `README.md` e documentos em `docs/` conforme o que realmente foi implementado;
+    - verificar migrations, acessibilidade, identidade visual e consistência do projeto.
+
+20. **Avaliar funcionalidades opcionais**
+    - considerar dashboard administrativo e exportação para PDF somente após todos os itens obrigatórios estarem funcionando e validados;
+    - implementar apenas um opcional por vez e consultar antes de adicionar dependências.
+
+### Regras de progressão
+
+- não criar todas as aplicações, pastas ou telas no início;
+- não agrupar dois modelos ou requisitos em uma mesma entrega apenas por conveniência;
+- testes, autorização, acessibilidade, i18n aplicável e identidade visual acompanham cada etapa;
+- a consolidação final não substitui as verificações realizadas durante o desenvolvimento;
+- depois de cada item, emitir o relatório previsto na seção 13 e aguardar validação.
 
 ---
 
