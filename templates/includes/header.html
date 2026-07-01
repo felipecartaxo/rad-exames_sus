@@ -10,6 +10,7 @@
       {% if request.user.is_authenticated %}
         {% if request.user.tipo == "CIDADAO" %}
           <a href="{% url 'exames:lista' %}">{% trans "Meus exames" %}</a>
+          <a href="{% url 'exames:historico' %}">{% trans "Histórico" %}</a>
         {% endif %}
         {% if request.user.tipo == "SERVIDOR" and perms.usuarios.view_usuario %}
           <a href="{% url 'usuarios_lista:lista' %}">{% trans "Usuários" %}</a>

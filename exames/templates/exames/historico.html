@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load i18n tz %}
+
+{% block title %}{% trans "Histórico de exames" %} | ExameSUS{% endblock %}
+
+{% block breadcrumb %}
+  <nav class="breadcrumb" aria-label="{% trans 'Navegação estrutural' %}">
+    <ol>
+      <li><a href="{% url 'usuarios:inicio' %}">{% trans "Conta" %}</a></li>
+      <li><a href="{% url 'exames:lista' %}">{% trans "Meus exames" %}</a></li>
+      <li aria-current="page">{% trans "Histórico" %}</li>
+    </ol>
+  </nav>
+{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <h1>{% trans "Histórico de exames" %}</h1>
+    <p>{% trans "Histórico organizado dos exames mais recentes para os mais antigos." %}</p>
+  </header>
+
+  <ul class="record-list" aria-label="{% trans 'Histórico de exames do cidadão' %}">
+    {% for exame in exames %}
+      <li class="record-card">
+        <div class="record-card-heading">
+          <h2>{{ exame.tipo }}</h2>
+          {% include "components/status_badge.html" with status=exame.status label=exame.get_status_display %}
+        </div>
+        <dl class="record-details">
+          <div>
+            <dt>{% trans "Data e horário" %}</dt>
+            <dd>{{ exame.data|date:"SHORT_DATETIME_FORMAT" }}</dd>
+          </div>
+          <div>
+            <dt>{% trans "Unidade de saúde" %}</dt>
+            <dd>{{ exame.unidade.nome }}</dd>
+          </div>
+          <div>
+            <dt>{% trans "Profissional" %}</dt>
+            <dd>{{ exame.profissional.nome }}</dd>
+          </div>
+        </dl>
+        <section class="exam-result" aria-labelledby="resultado-{{ exame.pk }}">
+          <h3 id="resultado-{{ exame.pk }}">{% trans "Resultado" %}</h3>
+          {% if exame.resultado %}
+            <p>{{ exame.resultado|linebreaksbr }}</p>
+          {% else %}
+            <p class="result-unavailable">{% trans "Resultado ainda não disponível." %}</p>
+          {% endif %}
+        </section>
+      </li>
+    {% empty %}
+      <li class="empty-state">
+        <h2>{% trans "Histórico vazio" %}</h2>
+        <p>{% trans "Você ainda não possui exames em seu histórico." %}</p>
+      </li>
+    {% endfor %}
+  </ul>
+
+  {% include "components/pagination.html" %}
+{% endblock %}
+
