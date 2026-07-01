@@ -144,6 +144,131 @@ O projeto deve seguir a arquitetura **MVT do Django**.
 
 ---
 
+## Estrutura inicialmente pensada
+
+A seguir, segue a estrutura que imaginei, mas não deve ser seguida à risca. O Codex pode propor ajustes, desde que justifique e aguarde aprovação.
+
+ExameSUS/
+├── AGENTS.md
+├── README.md
+├── manage.py
+├── requirements.txt
+├── .gitignore
+│
+├── config/
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── asgi.py
+│   └── wsgi.py
+│
+├── usuarios/
+│   ├── migrations/
+│   ├── templates/
+│   │   ├── usuarios/
+│   │   │   ├── cadastro.html
+│   │   │   └── lista.html
+│   │   └── registration/
+│   │       └── login.html
+│   ├── tests/
+│   │   ├── __init__.py
+│   │   ├── test_models.py
+│   │   ├── test_forms.py
+│   │   ├── test_views.py
+│   │   └── test_permissions.py
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── managers.py
+│   ├── models.py
+│   ├── permissions.py
+│   ├── urls.py
+│   └── views.py
+│
+├── rede_saude/
+│   ├── migrations/
+│   ├── tests/
+│   │   ├── __init__.py
+│   │   ├── test_models.py
+│   │   ├── test_admin.py
+│   │   └── test_forms.py
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   └── models.py
+│
+├── exames/
+│   ├── migrations/
+│   ├── templates/
+│   │   └── exames/
+│   │       ├── lista.html
+│   │       ├── historico.html
+│   │       └── detalhe.html
+│   ├── tests/
+│   │   ├── __init__.py
+│   │   ├── test_models.py
+│   │   ├── test_views.py
+│   │   ├── test_permissions.py
+│   │   ├── test_status.py
+│   │   └── test_api.py
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── services.py
+│   ├── urls.py
+│   └── views.py
+│
+├── notificacoes/                  # Criar somente na fase do RF006
+│   ├── migrations/
+│   ├── templates/
+│   │   └── notificacoes/
+│   │       └── lista.html
+│   ├── tests/
+│   ├── __init__.py
+│   ├── apps.py
+│   ├── context_processors.py
+│   ├── models.py
+│   ├── services.py
+│   ├── urls.py
+│   └── views.py
+│
+├── templates/
+│   ├── base.html
+│   ├── includes/
+│   │   ├── header.html
+│   │   ├── footer.html
+│   │   ├── messages.html
+│   │   └── notification_bell.html
+│   └── components/
+│       ├── breadcrumb.html
+│       ├── pagination.html
+│       ├── status_badge.html
+│       └── empty_state.html
+│
+├── static/
+│   ├── css/
+│   │   ├── tokens.css
+│   │   ├── base.css
+│   │   ├── layout.css
+│   │   ├── components.css
+│   │   └── pages/
+│   ├── js/
+│   │   └── main.js
+│   └── img/
+│       └── icons/
+│
+├── locale/
+│   └── pt_BR/
+│       └── LC_MESSAGES/
+│
+└── docs/
+    ├── requisitos.md
+    ├── modelo-de-dados.md
+    └── api.md
+
 ## 5. Modelo de dados autorizado
 
 Respeite os modelos, campos, restrições e relacionamentos definidos nesta seção. As decisões abaixo substituem as pendências anteriores sobre autenticação, perfis, nulabilidade, cardinalidade, status e exclusão física.
