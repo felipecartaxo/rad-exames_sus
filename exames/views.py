@@ -8,7 +8,7 @@ class ExameListView(CidadaoAutenticadoMixin, ListView):
     model = Exame
     template_name = "exames/lista.html"
     context_object_name = "exames"
-    paginate_by = 10
+    paginate_by = 5
 
     def get_queryset(self):
         return (
@@ -23,4 +23,3 @@ class ExameListView(CidadaoAutenticadoMixin, ListView):
         parametros.pop("page", None)
         contexto["querystring"] = parametros.urlencode()
         return contexto
-

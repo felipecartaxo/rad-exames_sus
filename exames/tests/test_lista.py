@@ -139,7 +139,7 @@ class ExameListViewTests(TestCase):
             [recente, antigo],
         )
 
-    def test_lista_possui_dez_exames_por_pagina(self):
+    def test_lista_possui_cinco_exames_por_pagina(self):
         for indice in range(12):
             self.criar_exame(
                 tipo=f"Exame {indice:02d}",
@@ -149,10 +149,12 @@ class ExameListViewTests(TestCase):
 
         primeira = self.client.get(self.url)
         segunda = self.client.get(self.url, {"page": 2})
+        terceira = self.client.get(self.url, {"page": 3})
 
-        self.assertEqual(len(primeira.context["exames"]), 10)
+        self.assertEqual(len(primeira.context["exames"]), 5)
         self.assertTrue(primeira.context["page_obj"].has_next())
-        self.assertEqual(len(segunda.context["exames"]), 2)
+        self.assertEqual(len(segunda.context["exames"]), 5)
+        self.assertEqual(len(terceira.context["exames"]), 2)
 
     def test_login_de_cidadao_redireciona_para_exames(self):
         resposta = self.client.post(
@@ -164,4 +166,3 @@ class ExameListViewTests(TestCase):
         )
 
         self.assertRedirects(resposta, self.url)
-
