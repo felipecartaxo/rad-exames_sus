@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Usuários" %} | ExameSUS{% endblock %}
+
+{% block breadcrumb %}
+  <nav class="breadcrumb" aria-label="{% trans 'Navegação estrutural' %}">
+    <ol>
+      <li><a href="{% url 'usuarios:inicio' %}">{% trans "Conta" %}</a></li>
+      <li aria-current="page">{% trans "Usuários" %}</li>
+    </ol>
+  </nav>
+{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <h1>{% trans "Usuários" %}</h1>
+    <p>{% trans "Consulte os cidadãos e servidores cadastrados no sistema." %}</p>
+  </header>
+
+  <ul class="record-list" aria-label="{% trans 'Usuários cadastrados' %}">
+    {% for usuario in usuarios %}
+      <li class="record-card">
+        <div class="record-card-heading">
+          <h2>{{ usuario.nome }}</h2>
+          {% if usuario.is_active %}
+            <span class="status-badge status-active">{% trans "Ativo" %}</span>
+          {% else %}
+            <span class="status-badge status-inactive">{% trans "Inativo" %}</span>
+          {% endif %}
+        </div>
+        <dl class="record-details">
+          <div>
+            <dt>{% trans "CPF" %}</dt>
+            <dd>{{ usuario.cpf }}</dd>
+          </div>
+          <div>
+            <dt>{% trans "Perfil" %}</dt>
+            <dd>{{ usuario.get_tipo_display }}</dd>
+          </div>
+        </dl>
+      </li>
+    {% empty %}
+      <li class="empty-state">
+        <h2>{% trans "Nenhum usuário encontrado" %}</h2>
+        <p>{% trans "Ainda não há usuários disponíveis para consulta." %}</p>
+      </li>
+    {% endfor %}
+  </ul>
+
+  {% include "components/pagination.html" %}
+{% endblock %}
+

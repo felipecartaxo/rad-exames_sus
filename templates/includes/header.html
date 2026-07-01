@@ -8,6 +8,9 @@
 
     <nav class="primary-navigation" aria-label="{% trans 'Navegação principal' %}">
       {% if request.user.is_authenticated %}
+        {% if request.user.tipo == "SERVIDOR" and perms.usuarios.view_usuario %}
+          <a href="{% url 'usuarios_lista:lista' %}">{% trans "Usuários" %}</a>
+        {% endif %}
         {% if request.user.is_superuser %}
           <a href="{% url 'admin:index' %}">{% trans "Administração" %}</a>
         {% endif %}
@@ -26,4 +29,3 @@
     </nav>
   </div>
 </header>
-

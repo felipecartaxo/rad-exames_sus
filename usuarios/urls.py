@@ -1,6 +1,11 @@
 from django.urls import path
 
-from .views import CadastroCidadaoView, ContaView, LoginCpfView, LogoutCpfView
+from .views import (
+    CadastroCidadaoView,
+    ContaView,
+    LoginCpfView,
+    LogoutCpfView,
+)
 
 
 app_name = "usuarios"

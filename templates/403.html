@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Acesso negado" %} | ExameSUS{% endblock %}
+
+{% block content %}
+  <section class="content-card" aria-labelledby="titulo-acesso-negado">
+    <h1 id="titulo-acesso-negado">{% trans "Acesso negado" %}</h1>
+    <p>{% trans "Você não tem permissão para acessar esta página." %}</p>
+    <a class="button button-secondary" href="{% url 'usuarios:inicio' %}">{% trans "Voltar para minha conta" %}</a>
+  </section>
+{% endblock %}
+

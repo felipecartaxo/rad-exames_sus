@@ -76,7 +76,7 @@ As seguintes decisões estão aprovadas e não devem voltar a ser tratadas como 
 - o conjunto de status de exame é fechado;
 - `Agendamento.data` armazena data e horário;
 - `Exame.data` armazena data e horário;
-- até as páginas definitivas dos perfis serem implementadas, cidadãos e servidores comuns autenticados são direcionados temporariamente para `/conta/`, enquanto superusuários são direcionados ao Django Admin;
+- até as páginas definitivas dos perfis serem implementadas, cidadãos e servidores sem permissão específica são direcionados temporariamente para `/conta/`; servidores com `usuarios.view_usuario` são direcionados para `/usuarios/`, e superusuários para o Django Admin;
 - unidades e profissionais devem ser desativados, e não excluídos fisicamente;
 - usuários são desativados por meio do campo `is_active` no Django Admin;
 - a API REST deve usar Django REST Framework, com detalhamento incremental posterior.

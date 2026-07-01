@@ -1,0 +1,25 @@
+{% load i18n %}
+{% if page_obj.has_other_pages %}
+  <nav class="pagination" aria-label="{% trans 'Paginação' %}">
+    <p class="pagination-summary">
+      {% blocktrans with atual=page_obj.number total=page_obj.paginator.num_pages %}Página {{ atual }} de {{ total }}{% endblocktrans %}
+    </p>
+    <ul>
+      <li>
+        {% if page_obj.has_previous %}
+          <a href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" rel="prev">{% trans "Página anterior" %}</a>
+        {% else %}
+          <span aria-disabled="true">{% trans "Página anterior" %}</span>
+        {% endif %}
+      </li>
+      <li>
+        {% if page_obj.has_next %}
+          <a href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}" rel="next">{% trans "Próxima página" %}</a>
+        {% else %}
+          <span aria-disabled="true">{% trans "Próxima página" %}</span>
+        {% endif %}
+      </li>
+    </ul>
+  </nav>
+{% endif %}
+
