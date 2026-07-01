@@ -46,7 +46,7 @@ class AutenticacaoTests(TestCase):
     def test_login_valido_cria_sessao(self):
         resposta = self.fazer_login()
 
-        self.assertRedirects(resposta, self.inicio_url)
+        self.assertRedirects(resposta, reverse("exames:lista"))
         self.assertEqual(
             int(self.client.session[SESSION_KEY]),
             self.cidadao.pk,
@@ -55,7 +55,7 @@ class AutenticacaoTests(TestCase):
     def test_login_aceita_cpf_formatado(self):
         resposta = self.fazer_login(cpf="529.982.247-25")
 
-        self.assertRedirects(resposta, self.inicio_url)
+        self.assertRedirects(resposta, reverse("exames:lista"))
         self.assertIn(SESSION_KEY, self.client.session)
 
     def test_senha_invalida_exibe_erro_generico(self):
@@ -119,4 +119,3 @@ class AutenticacaoTests(TestCase):
 
         self.assertRedirects(resposta, self.login_url)
         self.assertNotIn(SESSION_KEY, self.client.session)
-

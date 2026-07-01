@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load i18n tz %}
+
+{% block title %}{% trans "Meus exames" %} | ExameSUS{% endblock %}
+
+{% block breadcrumb %}
+  <nav class="breadcrumb" aria-label="{% trans 'Navegação estrutural' %}">
+    <ol>
+      <li><a href="{% url 'usuarios:inicio' %}">{% trans "Conta" %}</a></li>
+      <li aria-current="page">{% trans "Meus exames" %}</li>
+    </ol>
+  </nav>
+{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <h1>{% trans "Meus exames" %}</h1>
+    <p>{% trans "Exames organizados dos mais recentes para os mais antigos." %}</p>
+  </header>
+
+  <ul class="record-list" aria-label="{% trans 'Exames do cidadão' %}">
+    {% for exame in exames %}
+      <li class="record-card">
+        <div class="record-card-heading">
+          <h2>{{ exame.tipo }}</h2>
+          {% include "components/status_badge.html" with status=exame.status label=exame.get_status_display %}
+        </div>
+        <dl class="record-details">
+          <div>
+            <dt>{% trans "Data e horário" %}</dt>
+            <dd>{{ exame.data|date:"SHORT_DATETIME_FORMAT" }}</dd>
+          </div>
+          <div>
+            <dt>{% trans "Unidade de saúde" %}</dt>
+            <dd>{{ exame.unidade.nome }}</dd>
+          </div>
+        </dl>
+      </li>
+    {% empty %}
+      <li class="empty-state">
+        <h2>{% trans "Nenhum exame encontrado" %}</h2>
+        <p>{% trans "Você ainda não possui exames cadastrados." %}</p>
+      </li>
+    {% endfor %}
+  </ul>
+
+  {% include "components/pagination.html" %}
+{% endblock %}
+

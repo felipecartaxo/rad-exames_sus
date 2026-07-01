@@ -37,6 +37,8 @@ class LoginCpfView(LoginView):
             return redirect_url
         if self.request.user.is_superuser:
             return reverse("admin:index")
+        if self.request.user.tipo == Usuario.Tipo.CIDADAO:
+            return reverse("exames:lista")
         if (
             self.request.user.tipo == Usuario.Tipo.SERVIDOR
             and self.request.user.has_perm("usuarios.view_usuario")
