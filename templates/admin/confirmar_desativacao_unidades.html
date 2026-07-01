@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+  <p>{% trans "As unidades selecionadas deixarão de estar disponíveis para novos vínculos. Os registros históricos serão preservados." %}</p>
+
+  <ul>
+    {% for objeto in objetos %}
+      <li>{{ objeto }}</li>
+    {% endfor %}
+  </ul>
+
+  <form method="post">
+    {% csrf_token %}
+    {% for objeto in objetos %}
+      <input type="hidden" name="{{ action_checkbox_name }}" value="{{ objeto.pk }}">
+    {% endfor %}
+    <input type="hidden" name="action" value="{{ action_name }}">
+    <input type="hidden" name="confirmar" value="1">
+    <input type="submit" value="{% trans 'Confirmar desativação' %}">
+    <a href="{% url 'admin:rede_saude_unidadesaude_changelist' %}">{% trans "Cancelar" %}</a>
+  </form>
+{% endblock %}
+
