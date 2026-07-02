@@ -9,7 +9,10 @@ from django.utils import timezone
 from exames.models import Agendamento, Exame
 from exames.services import transicionar_status
 from notificacoes.models import Notificacao
-from notificacoes.services import criar_notificacao_resultado_disponivel
+from notificacoes.services import (
+    criar_notificacao_exame_atribuido,
+    criar_notificacao_resultado_disponivel,
+)
 from rede_saude.models import Profissional, UnidadeSaude
 
 
@@ -73,6 +76,28 @@ class NotificacaoTestMixin:
 
 
 class NotificacaoServiceTests(NotificacaoTestMixin, TestCase):
+    def test_atribuicao_cria_notificacao_para_profissional(self):
+        exame = self.criar_exame()
+
+        notificacao = criar_notificacao_exame_atribuido(exame)
+
+        self.assertEqual(notificacao.usuario_id, self.profissional.pk)
+        self.assertEqual(
+            notificacao.tipo,
+            Notificacao.TipoEvento.ATRIBUICAO,
+        )
+        self.assertFalse(notificacao.lida)
+        self.assertIn(exame.tipo, notificacao.mensagem)
+
+    def test_atribuicao_e_resultado_coexistem_no_mesmo_exame(self):
+        exame = self.criar_exame(status=Exame.Status.RESULTADO_DISPONIVEL)
+
+        atribuicao = criar_notificacao_exame_atribuido(exame)
+        resultado = criar_notificacao_resultado_disponivel(exame)
+
+        self.assertNotEqual(atribuicao, resultado)
+        self.assertEqual(Notificacao.objects.filter(exame=exame).count(), 2)
+
     def test_transicao_para_resultado_disponivel_cria_notificacao(self):
         exame = self.criar_exame()
 
@@ -133,6 +158,33 @@ class NotificacaoViewTests(NotificacaoTestMixin, TestCase):
         resposta = self.client.get(self.url)
 
         self.assertEqual(resposta.status_code, 403)
+
+    def test_profissional_visualiza_notificacao_de_atribuicao(self):
+        exame = self.criar_exame()
+        propria = criar_notificacao_exame_atribuido(exame)
+        self.criar_notificacao()
+        self.client.force_login(self.profissional)
+
+        resposta = self.client.get(self.url)
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, propria.mensagem)
+        self.assertContains(resposta, "1 notificação pendente")
+        self.assertQuerySetEqual(resposta.context["notificacoes"], [propria])
+
+    def test_profissional_marca_somente_as_proprias_como_lidas(self):
+        exame = self.criar_exame()
+        propria = criar_notificacao_exame_atribuido(exame)
+        terceira = self.criar_notificacao()
+        self.client.force_login(self.profissional)
+
+        resposta = self.client.post(reverse("notificacoes:marcar_lidas"))
+        propria.refresh_from_db()
+        terceira.refresh_from_db()
+
+        self.assertRedirects(resposta, self.url)
+        self.assertTrue(propria.lida)
+        self.assertFalse(terceira.lida)
 
     def test_cidadao_visualiza_somente_as_proprias_notificacoes(self):
         propria = self.criar_notificacao()

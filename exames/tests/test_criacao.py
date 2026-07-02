@@ -9,6 +9,7 @@ from django.utils import timezone
 from exames.forms import CriacaoAgendamentoExameForm
 from exames.models import Agendamento, Exame
 from exames.services import criar_agendamento_exame
+from notificacoes.models import Notificacao
 from rede_saude.models import Profissional, UnidadeSaude
 from usuarios.models import Usuario
 
@@ -160,6 +161,13 @@ class CriacaoAgendamentoExameViewTests(TestCase):
         self.assertEqual(exame.profissional, self.profissional)
         self.assertEqual(exame.status, Exame.Status.CONFIRMADO)
         self.assertEqual(exame.resultado, "")
+        notificacao = Notificacao.objects.get(
+            exame=exame,
+            tipo=Notificacao.TipoEvento.ATRIBUICAO,
+        )
+        self.assertEqual(notificacao.usuario_id, self.profissional.pk)
+        self.assertFalse(notificacao.lida)
+        self.assertIn(exame.tipo, notificacao.mensagem)
 
     def test_permite_profissional_de_unidade_diferente(self):
         self.client.force_login(self.servidor)

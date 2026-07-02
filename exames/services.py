@@ -30,6 +30,9 @@ def criar_agendamento_exame(
         profissional=profissional,
         agendamento=agendamento,
     )
+    from notificacoes.services import criar_notificacao_exame_atribuido
+
+    criar_notificacao_exame_atribuido(exame)
     return exame
 
 

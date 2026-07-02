@@ -7,17 +7,30 @@ from exames.models import Exame
 
 
 class Notificacao(models.Model):
+    class TipoEvento(models.TextChoices):
+        ATRIBUICAO = "ATRIBUICAO", _("Exame atribuído")
+        RESULTADO_DISPONIVEL = (
+            "RESULTADO_DISPONIVEL",
+            _("Resultado disponível"),
+        )
+
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="notificacoes",
         verbose_name=_("usuário"),
     )
-    exame = models.OneToOneField(
+    exame = models.ForeignKey(
         Exame,
         on_delete=models.PROTECT,
-        related_name="notificacao_resultado",
+        related_name="notificacoes",
         verbose_name=_("exame"),
+    )
+    tipo = models.CharField(
+        _("tipo de evento"),
+        max_length=30,
+        choices=TipoEvento.choices,
+        default=TipoEvento.RESULTADO_DISPONIVEL,
     )
     mensagem = models.CharField(_("mensagem"), max_length=255)
     lida = models.BooleanField(_("lida"), default=False)
@@ -26,13 +39,24 @@ class Notificacao(models.Model):
         ordering = ("-pk",)
         verbose_name = _("notificação")
         verbose_name_plural = _("notificações")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("exame", "usuario", "tipo"),
+                name="notificacao_evento_destinatario_unico",
+            )
+        ]
 
     def clean(self):
         super().clean()
-        if self.exame_id and self.usuario_id != self.exame.usuario_id:
-            raise ValidationError(
-                {"usuario": _("O usuário deve ser o proprietário do exame.")}
-            )
+        if not self.exame_id:
+            return
+        destinatario = self.exame.usuario_id
+        mensagem = _("O usuário deve ser o proprietário do exame.")
+        if self.tipo == self.TipoEvento.ATRIBUICAO:
+            destinatario = self.exame.profissional_id
+            mensagem = _("O usuário deve ser o profissional responsável.")
+        if self.usuario_id != destinatario:
+            raise ValidationError({"usuario": mensagem})
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -40,4 +64,3 @@ class Notificacao(models.Model):
 
     def __str__(self):
         return self.mensagem
-

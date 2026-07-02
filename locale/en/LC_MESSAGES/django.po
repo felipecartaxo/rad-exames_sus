@@ -437,3 +437,17 @@ msgstr "Empty history"
 
 msgid "Você ainda não possui exames em seu histórico."
 msgstr "You do not have any exams in your history yet."
+msgid "Exame atribuído"
+msgstr "Assigned exam"
+
+msgid "tipo de evento"
+msgstr "event type"
+
+msgid "O usuário deve ser o profissional responsável."
+msgstr "The user must be the assigned health professional."
+
+msgid "O exame %(tipo)s foi atribuído a você. Consulte os detalhes para acompanhar o atendimento."
+msgstr "The %(tipo)s exam was assigned to you. View its details to follow the service."
+
+msgid "Notificações do usuário"
+msgstr "User notifications"
