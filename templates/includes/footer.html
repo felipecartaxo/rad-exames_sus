@@ -1,8 +1,18 @@
 {% load i18n %}
 <footer class="site-footer">
   <div class="container footer-inner">
-    <p><strong>ExameSUS</strong> — {% trans "projeto acadêmico para gestão de exames no SUS." %}</p>
-    <p>{% trans "Desenvolvido com Django." %}</p>
+    <div class="footer-about">
+      <p class="footer-brand">ExameSUS</p>
+      <p class="footer-slogan">{% trans "Cuidando da saúde e valorizando a vida de cada cidadão." %}</p>
+    </div>
+    <section class="footer-credits" aria-labelledby="titulo-desenvolvedores">
+      <h2 id="titulo-desenvolvedores">{% trans "Desenvolvedores" %}</h2>
+      <ul>
+        <li>Felipe Cartaxo</li>
+        <li>Leidiana Patrício</li>
+        <li>Thiago Santos</li>
+        <li>Sheila Lee</li>
+      </ul>
+    </section>
   </div>
 </footer>
-

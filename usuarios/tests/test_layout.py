@@ -9,8 +9,26 @@ class LayoutCompartilhadoTests(TestCase):
         resposta = self.client.get(reverse("usuarios:login"))
 
         self.assertContains(resposta, "ExameSUS")
+
+    def test_rodape_destaca_plataforma_slogan_e_exibe_desenvolvedores(self):
+        resposta = self.client.get(reverse("usuarios:login"))
+
+        self.assertContains(
+            resposta,
+            "Cuidando da saúde e valorizando a vida de cada cidadão.",
+        )
+        self.assertContains(resposta, 'class="footer-brand"')
+        self.assertContains(resposta, 'class="footer-slogan"')
+        for nome in (
+            "Felipe Cartaxo",
+            "Leidiana Patrício",
+            "Thiago Santos",
+            "Sheila Lee",
+        ):
+            self.assertContains(resposta, nome)
+        self.assertNotContains(resposta, "projeto acadêmico")
+        self.assertNotContains(resposta, "RAD - Desenvolvimento Ágil")
         self.assertContains(resposta, "Ir para o conteúdo principal")
-        self.assertContains(resposta, "projeto acadêmico para gestão de exames")
         self.assertContains(resposta, "css/tokens.css")
         self.assertContains(resposta, "css/components.css")
 

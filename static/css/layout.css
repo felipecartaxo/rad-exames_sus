@@ -69,14 +69,57 @@ body {
 
 .footer-inner {
   display: flex;
-  min-height: 6rem;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
+  min-height: 10rem;
+  padding-block: var(--space-5);
+  align-items: flex-start;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
-.footer-inner p {
+.footer-about {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.footer-about p,
+.footer-credits h2 {
   margin: 0;
+}
+
+.footer-brand {
+  color: var(--color-text-on-dark);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.footer-slogan {
+  max-width: 48rem;
+  color: var(--color-text-on-dark);
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.footer-credits h2 {
+  color: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.footer-credits ul {
+  display: flex;
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  gap: var(--space-2);
+  list-style: none;
+  color: rgb(255 255 255 / 82%);
+  font-size: 0.875rem;
+}
+
+.footer-credits li + li::before {
+  margin-right: var(--space-2);
+  content: "•";
 }
 
 @media (max-width: 40rem) {
@@ -90,6 +133,10 @@ body {
   .header-inner,
   .footer-inner {
     padding-block: var(--space-3);
+  }
+
+  .footer-credits ul {
+    flex-wrap: wrap;
   }
 
   .primary-navigation {

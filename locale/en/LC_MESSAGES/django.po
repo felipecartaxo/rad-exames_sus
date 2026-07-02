@@ -398,3 +398,9 @@ msgstr "Do not have an account yet?"
 
 msgid "Cadastre-se"
 msgstr "Create one"
+
+msgid "Cuidando da saúde e valorizando a vida de cada cidadão."
+msgstr "Caring for health and valuing every citizen's life."
+
+msgid "Desenvolvedores"
+msgstr "Developers"
