@@ -2,12 +2,16 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
+from django.views import View
 from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
+
+from rede_saude.forms import EdicaoProfissionalServidorForm
+from rede_saude.models import Profissional
 
 from .forms import (
     CadastroCidadaoForm,
@@ -74,9 +78,7 @@ class UsuarioListView(ServidorMixin, ListView):
         return self.form_filtros
 
     def get_queryset(self):
-        queryset = Usuario.objects.exclude(
-            tipo=Usuario.Tipo.PROFISSIONAL
-        )
+        queryset = Usuario.objects.select_related("profissional")
         formulario = self.get_form_filtros()
         if formulario.is_valid():
             filtros = formulario.cleaned_data
@@ -145,4 +147,57 @@ class UsuarioUpdateView(ServidorMixin, FormView):
     def form_valid(self, form):
         form.save()
         messages.success(self.request, _("Usuário atualizado com sucesso."))
+        return super().form_valid(form)
+
+
+class UsuarioDeactivateView(ServidorMixin, View):
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
+        usuario = get_object_or_404(
+            Usuario,
+            pk=self.kwargs["pk"],
+            tipo__in=(Usuario.Tipo.CIDADAO, Usuario.Tipo.PROFISSIONAL),
+            is_active=True,
+            is_superuser=False,
+        )
+        usuario.is_active = False
+        usuario.save(update_fields=["is_active"])
+        messages.success(
+            request,
+            _("O perfil de %(nome)s foi inativado.") % {"nome": usuario.nome},
+        )
+        return redirect("usuarios_lista:lista")
+
+
+class ProfissionalUpdateView(ServidorMixin, FormView):
+    template_name = "usuarios/editar_profissional.html"
+    form_class = EdicaoProfissionalServidorForm
+    success_url = reverse_lazy("usuarios_lista:lista")
+
+    def get_profissional(self):
+        if not hasattr(self, "profissional_editado"):
+            self.profissional_editado = get_object_or_404(
+                Profissional.objects.select_related("unidade"),
+                pk=self.kwargs["pk"],
+                is_superuser=False,
+            )
+        return self.profissional_editado
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["instance"] = self.get_profissional()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        contexto["profissional_editado"] = self.get_profissional()
+        return contexto
+
+    def form_valid(self, form):
+        form.save()
+        messages.success(
+            self.request,
+            _("Profissional de saúde atualizado com sucesso."),
+        )
         return super().form_valid(form)

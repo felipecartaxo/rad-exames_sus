@@ -87,6 +87,7 @@ class FiltroUsuarioForm(forms.Form):
             ("", _("Todos os perfis")),
             (Usuario.Tipo.CIDADAO, Usuario.Tipo.CIDADAO.label),
             (Usuario.Tipo.SERVIDOR, Usuario.Tipo.SERVIDOR.label),
+            (Usuario.Tipo.PROFISSIONAL, Usuario.Tipo.PROFISSIONAL.label),
         ),
     )
     situacao = forms.ChoiceField(

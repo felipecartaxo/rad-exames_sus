@@ -149,7 +149,7 @@ class UsuarioListViewTests(TestCase):
 
         self.assertQuerySetEqual(resposta.context["usuarios"], [inativo])
 
-    def test_listagem_nao_exibe_profissionais(self):
+    def test_listagem_exibe_profissionais_sem_acao_de_edicao(self):
         profissional = Usuario.objects.create_user(
             cpf="93541134780",
             nome="Profissional",
@@ -160,7 +160,84 @@ class UsuarioListViewTests(TestCase):
 
         resposta = self.client.get(self.url)
 
-        self.assertNotIn(profissional, resposta.context["usuarios"])
+        self.assertIn(profissional, resposta.context["usuarios"])
+        self.assertNotContains(
+            resposta,
+            reverse("usuarios_lista:editar", args=[profissional.pk]),
+        )
+        self.assertContains(
+            resposta,
+            reverse("usuarios_lista:inativar", args=[profissional.pk]),
+        )
+
+    def test_filtra_por_perfil_profissional(self):
+        profissional = Usuario.objects.create_user(
+            cpf="93541134780",
+            nome="Profissional",
+            tipo=Usuario.Tipo.PROFISSIONAL,
+            password="senha-segura-123",
+        )
+        self.client.force_login(self.servidor_sem_permissao)
+
+        resposta = self.client.get(
+            self.url,
+            {"tipo": Usuario.Tipo.PROFISSIONAL},
+        )
+
+        self.assertQuerySetEqual(resposta.context["usuarios"], [profissional])
+
+    def test_servidor_inativa_cidadao(self):
+        self.client.force_login(self.servidor_sem_permissao)
+
+        resposta = self.client.post(
+            reverse("usuarios_lista:inativar", args=[self.cidadao.pk])
+        )
+
+        self.assertRedirects(resposta, self.url)
+        self.cidadao.refresh_from_db()
+        self.assertFalse(self.cidadao.is_active)
+
+    def test_servidor_inativa_profissional(self):
+        profissional = Usuario.objects.create_user(
+            cpf="93541134780",
+            nome="Profissional",
+            tipo=Usuario.Tipo.PROFISSIONAL,
+            password="senha-segura-123",
+        )
+        self.client.force_login(self.servidor_sem_permissao)
+
+        resposta = self.client.post(
+            reverse("usuarios_lista:inativar", args=[profissional.pk])
+        )
+
+        self.assertRedirects(resposta, self.url)
+        profissional.refresh_from_db()
+        self.assertFalse(profissional.is_active)
+
+    def test_inativacao_rejeita_get_cidadao_e_perfil_servidor(self):
+        url_cidadao = reverse(
+            "usuarios_lista:inativar",
+            args=[self.cidadao.pk],
+        )
+        self.client.force_login(self.servidor_sem_permissao)
+        self.assertEqual(self.client.get(url_cidadao).status_code, 405)
+
+        url_servidor = reverse(
+            "usuarios_lista:inativar",
+            args=[self.servidor.pk],
+        )
+        self.assertEqual(self.client.post(url_servidor).status_code, 404)
+
+    def test_cidadao_nao_pode_inativar_perfil(self):
+        self.client.force_login(self.cidadao)
+
+        resposta = self.client.post(
+            reverse("usuarios_lista:inativar", args=[self.cidadao.pk])
+        )
+
+        self.assertEqual(resposta.status_code, 403)
+        self.cidadao.refresh_from_db()
+        self.assertTrue(self.cidadao.is_active)
 
     def test_paginacao_numerica_preserva_filtros(self):
         for indice in range(12):

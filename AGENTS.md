@@ -80,9 +80,9 @@ As seguintes decisões estão aprovadas e não devem voltar a ser tratadas como 
 - `Agendamento.data` armazena data e horário;
 - `Exame.data` armazena data e horário;
 - cidadãos autenticados são direcionados para `/exames/`; profissionais são direcionados para sua lista de exames; todos os servidores são direcionados para `/usuarios/`; e superusuários são direcionados para o Django Admin;
-- qualquer usuário com perfil `SERVIDOR` pode criar e editar cidadãos e servidores pela área `/usuarios/`, sem permissões Django adicionais; profissionais e superusuários não podem ser alterados por essa área;
+- qualquer usuário com perfil `SERVIDOR` pode criar e editar cidadãos e servidores pela área `/usuarios/`, sem permissões Django adicionais; também pode editar e inativar profissionais por essa área, mas não alterar superusuários;
 - unidades e profissionais devem ser desativados, e não excluídos fisicamente; profissionais utilizam `Usuario.is_active` como fonte única de ativação;
-- usuários são desativados por meio do campo `is_active` no Django Admin;
+- usuários são desativados por meio do campo `is_active`; cidadãos e profissionais também podem ser inativados por servidores na área `/usuarios/`;
 - a API REST deve usar Django REST Framework, com detalhamento incremental posterior.
 
 ---
@@ -335,7 +335,7 @@ Responsável por:
 - desativação e reativação do profissional por `Usuario.is_active`;
 - filtragem de unidades ativas para novos vínculos.
 
-Não criar views ou templates públicos para esses cadastros enquanto RF007 e RF008 permanecerem atendidos pelo Django Admin.
+O cadastro inicial de unidades e profissionais permanece no Django Admin. A edição e a inativação de profissionais também são disponibilizadas aos servidores autenticados pela área `/usuarios/`.
 
 O `admin.py` deve, quando os respectivos requisitos forem implementados, oferecer listagem, busca, filtros, edição, desativação e reativação, sem exclusão física.
 
@@ -884,7 +884,7 @@ Não oferecer exclusão física.
 
 ### RF008 — Administração de profissionais de saúde
 
-O superusuário deve gerenciar profissionais de saúde pelo painel padrão do Django Admin com:
+O superusuário deve gerenciar profissionais de saúde pelo painel padrão do Django Admin. Servidores autenticados também podem editar e inativar profissionais pela área `/usuarios/`, sem acesso à criação de profissionais.
 
 - nome;
 - CPF;
@@ -901,7 +901,7 @@ Critérios mínimos:
 - vínculo obrigatório com unidade de saúde;
 - listagem, cadastro, edição, desativação e reativação;
 - unidades desativadas não devem ser oferecidas para novos vínculos;
-- acesso restrito a usuários com acesso ao Django Admin e permissões administrativas adequadas;
+- criação restrita ao superusuário no Django Admin; edição e inativação também permitidas a usuários com perfil `SERVIDOR`;
 - mensagens e validações claras;
 - testes de permissão, unicidade, relacionamento e desativação.
 

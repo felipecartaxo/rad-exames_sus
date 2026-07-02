@@ -16,7 +16,7 @@
   <header class="page-header page-header-actions">
     <div>
       <h1>{% trans "Usuários" %}</h1>
-      <p>{% trans "Consulte os cidadãos e servidores cadastrados no sistema." %}</p>
+      <p>{% trans "Consulte os cidadãos, servidores e profissionais cadastrados no sistema." %}</p>
     </div>
     <a class="button" href="{% url 'usuarios_lista:criar' %}">{% trans "Novo usuário" %}</a>
   </header>
@@ -59,9 +59,29 @@
             <dd>{{ usuario.get_tipo_display }}</dd>
           </div>
         </dl>
-        {% if not usuario.is_superuser %}
+        {% if not usuario.is_superuser and usuario.tipo != "PROFISSIONAL" %}
           <div class="record-card-actions">
             <a class="button button-secondary" href="{% url 'usuarios_lista:editar' usuario.pk %}">{% trans "Editar usuário" %}</a>
+            {% if usuario.is_active and usuario.tipo == "CIDADAO" %}
+              <form method="post" action="{% url 'usuarios_lista:inativar' usuario.pk %}">
+                {% csrf_token %}
+                <button class="button button-danger" type="submit">{% trans "Inativar perfil" %}</button>
+              </form>
+            {% endif %}
+          </div>
+        {% elif usuario.is_active and usuario.tipo == "PROFISSIONAL" %}
+          <div class="record-card-actions">
+            {% if usuario.profissional %}
+              <a class="button button-secondary" href="{% url 'usuarios_lista:editar_profissional' usuario.pk %}">{% trans "Editar profissional" %}</a>
+            {% endif %}
+            <form method="post" action="{% url 'usuarios_lista:inativar' usuario.pk %}">
+              {% csrf_token %}
+              <button class="button button-danger" type="submit">{% trans "Inativar perfil" %}</button>
+            </form>
+          </div>
+        {% elif usuario.tipo == "PROFISSIONAL" and usuario.profissional %}
+          <div class="record-card-actions">
+            <a class="button button-secondary" href="{% url 'usuarios_lista:editar_profissional' usuario.pk %}">{% trans "Editar profissional" %}</a>
           </div>
         {% endif %}
       </li>

@@ -26,6 +26,18 @@ button[type="submit"]:hover {
   color: var(--color-primary);
 }
 
+.button-danger {
+  border-color: var(--color-danger);
+  background: var(--color-background);
+  color: var(--color-danger);
+}
+
+.button-danger:hover {
+  border-color: var(--color-danger);
+  background: var(--color-danger);
+  color: var(--color-text-on-dark);
+}
+
 .button-tertiary {
   min-height: auto;
   padding: 0;
@@ -296,6 +308,10 @@ button[type="submit"]:hover {
   flex-wrap: wrap;
   gap: var(--space-3);
   margin-top: var(--space-4);
+}
+
+.record-card-actions form {
+  margin: 0;
 }
 
 .status-badge {

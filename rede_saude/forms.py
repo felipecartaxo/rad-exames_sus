@@ -67,3 +67,14 @@ class ProfissionalAdminForm(forms.ModelForm):
             profissional.save()
             self.save_m2m()
         return profissional
+
+
+class EdicaoProfissionalServidorForm(ProfissionalAdminForm):
+    class Meta(ProfissionalAdminForm.Meta):
+        fields = (
+            "cpf",
+            "nome",
+            "cargo",
+            "especialidade",
+            "unidade",
+        )
