@@ -16,6 +16,7 @@
         <div class="primary-navigation-links">
           {% if request.user.tipo == "CIDADAO" %}
             <a href="{% url 'usuarios:inicio' %}">{% trans "Minha conta" %}</a>
+            <a href="{% url 'exames:dashboard_cidadao' %}">{% trans "Dashboard" %}</a>
             <a href="{% url 'exames:lista' %}">{% trans "Meus exames" %}</a>
             <a href="{% url 'exames:historico' %}">{% trans "Histórico" %}</a>
           {% endif %}

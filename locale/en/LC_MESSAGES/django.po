@@ -481,3 +481,36 @@ msgstr "View profiles"
 
 msgid "Minha conta"
 msgstr "My account"
+
+msgid "Dashboard do cidadão"
+msgstr "Citizen dashboard"
+
+msgid "Acompanhe seus exames de acordo com o status atual."
+msgstr "Track your exams according to their current status."
+
+msgid "Resumo dos exames por status"
+msgstr "Exam summary by status"
+
+msgid "Confirmados"
+msgstr "Confirmed"
+
+msgid "Resultados disponíveis"
+msgstr "Results available"
+
+msgid "Cancelados"
+msgstr "Cancelled"
+
+msgid "Ver exames"
+msgstr "View exams"
+
+msgid "Resumo do exame"
+msgstr "Exam summary"
+
+msgid "Identificador"
+msgstr "Identifier"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Baixar resumo em PDF"
+msgstr "Download PDF summary"

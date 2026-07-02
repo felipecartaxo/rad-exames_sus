@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Dashboard" %} | ExameSUS{% endblock %}
+
+{% block breadcrumb %}
+  <nav class="breadcrumb" aria-label="{% trans 'Navegação estrutural' %}">
+    <ol>
+      <li><a href="{% url 'usuarios:inicio' %}">{% trans "Minha conta" %}</a></li>
+      <li aria-current="page">{% trans "Dashboard" %}</li>
+    </ol>
+  </nav>
+{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <h1>{% trans "Dashboard do cidadão" %}</h1>
+    <p>{% trans "Acompanhe seus exames de acordo com o status atual." %}</p>
+  </header>
+
+  <section class="dashboard-grid" aria-label="{% trans 'Resumo dos exames por status' %}">
+    <article class="stat-card">
+      <p class="stat-card-label">{% trans "Confirmados" %}</p>
+      <strong class="stat-card-value">{{ totais.confirmados }}</strong>
+      <a href="{% url 'exames:lista' %}?status=CONFIRMADO">{% trans "Ver exames" %}</a>
+    </article>
+    <article class="stat-card">
+      <p class="stat-card-label">{% trans "Em análise" %}</p>
+      <strong class="stat-card-value">{{ totais.em_analise }}</strong>
+      <a href="{% url 'exames:lista' %}?status=EM_ANALISE">{% trans "Ver exames" %}</a>
+    </article>
+    <article class="stat-card">
+      <p class="stat-card-label">{% trans "Resultados disponíveis" %}</p>
+      <strong class="stat-card-value">{{ totais.resultados_disponiveis }}</strong>
+      <a href="{% url 'exames:historico' %}?status=RESULTADO_DISPONIVEL">{% trans "Ver exames" %}</a>
+    </article>
+    <article class="stat-card">
+      <p class="stat-card-label">{% trans "Cancelados" %}</p>
+      <strong class="stat-card-value">{{ totais.cancelados }}</strong>
+      <a href="{% url 'exames:historico' %}?status=CANCELADO">{% trans "Ver exames" %}</a>
+    </article>
+  </section>
+{% endblock %}

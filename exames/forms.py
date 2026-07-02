@@ -164,3 +164,12 @@ class FiltroExameCidadaoForm(forms.Form):
                 _("A data final deve ser igual ou posterior à data inicial."),
             )
         return dados
+
+
+class FiltroHistoricoExameCidadaoForm(FiltroExameCidadaoForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["status"].choices = (
+            ("", _("Todos os status")),
+            *Exame.Status.choices,
+        )

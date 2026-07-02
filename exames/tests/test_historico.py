@@ -195,6 +195,69 @@ class ExameHistoricoViewTests(TestCase):
         for exame in exames:
             self.assertIn(exame, resposta.context["exames"])
 
+    def test_historico_filtra_por_todos_os_status(self):
+        cancelado = self.criar_exame(
+            tipo="Exame cancelado",
+            status=Exame.Status.CANCELADO,
+            resultado="",
+        )
+        confirmado = self.criar_exame(
+            tipo="Exame confirmado",
+            status=Exame.Status.CONFIRMADO,
+            resultado="",
+        )
+        self.client.force_login(self.cidadao)
+
+        resposta = self.client.get(
+            self.url,
+            {"status": Exame.Status.CANCELADO},
+        )
+
+        self.assertQuerySetEqual(resposta.context["exames"], [cancelado])
+        self.assertNotIn(confirmado, resposta.context["exames"])
+        opcoes = dict(resposta.context["form_filtros"].fields["status"].choices)
+        self.assertTrue(set(Exame.Status.values).issubset(opcoes))
+
+    def test_historico_oferece_resumo_pdf_para_cada_exame(self):
+        exame = self.criar_exame()
+        self.client.force_login(self.cidadao)
+
+        resposta = self.client.get(self.url)
+
+        self.assertContains(resposta, "Baixar resumo em PDF")
+        self.assertContains(
+            resposta,
+            reverse("exames:resumo_pdf", args=[exame.pk]),
+        )
+
+    def test_cidadao_baixa_resumo_pdf_do_proprio_exame(self):
+        exame = self.criar_exame()
+        self.client.force_login(self.cidadao)
+
+        resposta = self.client.get(
+            reverse("exames:resumo_pdf", args=[exame.pk])
+        )
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(resposta["Content-Type"], "application/pdf")
+        self.assertIn(
+            f'filename="exame-{exame.pk}.pdf"',
+            resposta["Content-Disposition"],
+        )
+        self.assertTrue(resposta.content.startswith(b"%PDF"))
+
+    def test_resumo_pdf_impede_acesso_de_terceiros_e_servidor(self):
+        terceiro = self.criar_exame(
+            usuario=self.outro_cidadao,
+            agendamento=self.outro_agendamento,
+        )
+        url = reverse("exames:resumo_pdf", args=[terceiro.pk])
+
+        self.client.force_login(self.cidadao)
+        self.assertEqual(self.client.get(url).status_code, 404)
+        self.client.force_login(self.servidor)
+        self.assertEqual(self.client.get(url).status_code, 403)
+
     def test_historico_possui_cinco_exames_por_pagina(self):
         for indice in range(7):
             self.criar_exame(

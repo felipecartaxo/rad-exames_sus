@@ -19,6 +19,23 @@
     <p>{% trans "Histórico organizado dos exames mais recentes para os mais antigos." %}</p>
   </header>
 
+  <section class="list-filters" aria-labelledby="titulo-filtros-historico">
+    <h2 id="titulo-filtros-historico">{% trans "Filtrar exames" %}</h2>
+    <form class="list-filters-form" method="get" novalidate>
+      {% for field in form_filtros.visible_fields %}
+        <div class="form-field">
+          {{ field.label_tag }}
+          {{ field }}
+          {% for error in field.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+      {% endfor %}
+      <div class="form-actions">
+        <button type="submit">{% trans "Aplicar filtros" %}</button>
+        <a class="button button-tertiary" href="{% url 'exames:historico' %}">{% trans "Limpar filtros" %}</a>
+      </div>
+    </form>
+  </section>
+
   <ul class="record-list" aria-label="{% trans 'Histórico de exames do cidadão' %}">
     {% for exame in exames %}
       <li class="record-card">
@@ -48,11 +65,12 @@
             <p class="result-unavailable">{% trans "Resultado ainda não disponível." %}</p>
           {% endif %}
         </section>
-        {% if exame.documento_resultado %}
-          <div class="record-card-actions">
+        <div class="record-card-actions">
+          <a class="button button-secondary" href="{% url 'exames:resumo_pdf' exame.pk %}">{% trans "Baixar resumo em PDF" %}</a>
+          {% if exame.documento_resultado %}
             <a class="button button-secondary" href="{% url 'exames:documento_resultado' exame.pk %}">{% trans "Visualizar anexo do resultado" %}</a>
-          </div>
-        {% endif %}
+          {% endif %}
+        </div>
       </li>
     {% empty %}
       <li class="empty-state">

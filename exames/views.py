@@ -1,19 +1,26 @@
+from io import BytesIO
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.http import FileResponse, Http404
+from django.db.models import Count, Q
+from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
 
 from usuarios.permissions import ServidorAutorizadoMixin
 
 from .forms import (
     CriacaoAgendamentoExameForm,
     FiltroExameCidadaoForm,
+    FiltroHistoricoExameCidadaoForm,
     TransicaoExameForm,
 )
 from .models import Exame
@@ -85,6 +92,34 @@ class ExameListView(CidadaoAutenticadoMixin, ListView):
         parametros.pop("page", None)
         contexto["querystring"] = parametros.urlencode()
         contexto["form_filtros"] = self.get_form_filtros()
+        return contexto
+
+
+class ExameDashboardCidadaoView(CidadaoAutenticadoMixin, TemplateView):
+    template_name = "exames/dashboard_cidadao.html"
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        contexto["totais"] = Exame.objects.filter(
+            usuario=self.request.user
+        ).aggregate(
+            confirmados=Count(
+                "pk",
+                filter=Q(status=Exame.Status.CONFIRMADO),
+            ),
+            em_analise=Count(
+                "pk",
+                filter=Q(status=Exame.Status.EM_ANALISE),
+            ),
+            resultados_disponiveis=Count(
+                "pk",
+                filter=Q(status=Exame.Status.RESULTADO_DISPONIVEL),
+            ),
+            cancelados=Count(
+                "pk",
+                filter=Q(status=Exame.Status.CANCELADO),
+            ),
+        )
         return contexto
 
 
@@ -245,16 +280,83 @@ class ExameHistoricoView(CidadaoAutenticadoMixin, ListView):
     context_object_name = "exames"
     paginate_by = 5
 
+    def get_form_filtros(self):
+        if not hasattr(self, "form_filtros"):
+            self.form_filtros = FiltroHistoricoExameCidadaoForm(
+                self.request.user,
+                self.request.GET or None,
+            )
+        return self.form_filtros
+
     def get_queryset(self):
-        return (
+        queryset = (
             Exame.objects.filter(usuario=self.request.user)
             .select_related("unidade", "profissional")
-            .order_by("-data", "-pk")
         )
+        formulario = self.get_form_filtros()
+        if formulario.is_valid():
+            filtros = formulario.cleaned_data
+            if filtros["status"]:
+                queryset = queryset.filter(status=filtros["status"])
+            if filtros["data_inicio"]:
+                queryset = queryset.filter(data__gte=filtros["data_inicio"])
+            if filtros["data_fim"]:
+                queryset = queryset.filter(data__lte=filtros["data_fim"])
+            if filtros["unidade"]:
+                queryset = queryset.filter(unidade=filtros["unidade"])
+        return queryset.order_by("-data", "-pk")
 
     def get_context_data(self, **kwargs):
         contexto = super().get_context_data(**kwargs)
         parametros = self.request.GET.copy()
         parametros.pop("page", None)
         contexto["querystring"] = parametros.urlencode()
+        contexto["form_filtros"] = self.get_form_filtros()
         return contexto
+
+
+@login_required
+def baixar_resumo_exame_pdf(request, pk):
+    from usuarios.models import Usuario
+
+    if request.user.tipo != Usuario.Tipo.CIDADAO:
+        raise PermissionDenied
+    exame = get_object_or_404(
+        Exame.objects.select_related("usuario", "unidade", "profissional"),
+        pk=pk,
+        usuario=request.user,
+    )
+    buffer = BytesIO()
+    documento = canvas.Canvas(buffer, pagesize=A4)
+    documento.setTitle(f"ExameSUS - {exame.tipo}")
+    documento.setFont("Helvetica-Bold", 18)
+    documento.drawString(72, 770, "ExameSUS")
+    documento.setFont("Helvetica-Bold", 14)
+    documento.drawString(72, 738, str(_("Resumo do exame")))
+    documento.setFont("Helvetica", 11)
+    dados = (
+        (_("Identificador"), exame.pk),
+        (_("Cidadão"), exame.usuario.nome),
+        (_("Tipo do exame"), exame.tipo),
+        (_("Status"), exame.get_status_display()),
+        (
+            _("Data e horário"),
+            timezone.localtime(exame.data).strftime("%d/%m/%Y %H:%M"),
+        ),
+        (_("Unidade de saúde"), exame.unidade.nome),
+        (_("Profissional responsável"), exame.profissional.nome),
+    )
+    altura = 700
+    for rotulo, valor in dados:
+        documento.setFont("Helvetica-Bold", 11)
+        documento.drawString(72, altura, f"{rotulo}:")
+        documento.setFont("Helvetica", 11)
+        documento.drawString(220, altura, str(valor))
+        altura -= 28
+    documento.showPage()
+    documento.save()
+    resposta = HttpResponse(buffer.getvalue(), content_type="application/pdf")
+    resposta["Content-Disposition"] = (
+        f'attachment; filename="exame-{exame.pk}.pdf"'
+    )
+    return resposta
