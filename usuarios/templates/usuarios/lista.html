@@ -47,8 +47,8 @@
     {% csrf_token %}
     <p>{% trans "Com os perfis selecionados:" %}</p>
     <div class="form-actions">
-      <button class="button button-danger" type="submit" name="acao" value="inativar">{% trans "Inativar selecionados" %}</button>
       <button class="button button-secondary" type="submit" name="acao" value="reativar">{% trans "Reativar selecionados" %}</button>
+      <button class="button button-danger" type="submit" name="acao" value="inativar">{% trans "Inativar selecionados" %}</button>
     </div>
   </form>
 
