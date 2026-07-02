@@ -93,6 +93,10 @@ LOGIN_REDIRECT_URL = "usuarios:inicio"
 LOGOUT_REDIRECT_URL = "usuarios:login"
 
 LANGUAGE_CODE = "pt-br"
+LANGUAGES = [
+    ("pt-br", "Português"),
+    ("en", "English"),
+]
 TIME_ZONE = "America/Sao_Paulo"
 USE_I18N = True
 USE_TZ = True

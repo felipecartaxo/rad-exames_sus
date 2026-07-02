@@ -1,0 +1,133 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ExameSUS\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "ExameSUS — página inicial"
+msgstr "ExameSUS — home page"
+
+msgid "Navegação principal"
+msgstr "Main navigation"
+
+msgid "Navegação estrutural"
+msgstr "Breadcrumb"
+
+msgid "Meus exames"
+msgstr "My exams"
+
+msgid "Histórico"
+msgstr "History"
+
+msgid "Conta"
+msgstr "Account"
+
+msgid "Sair"
+msgstr "Sign out"
+
+msgid "Alterar idioma"
+msgstr "Change language"
+
+msgid "Idioma"
+msgstr "Language"
+
+msgid "Nenhuma notificação pendente"
+msgstr "No pending notifications"
+
+msgid "%(quantidade)s notificação pendente"
+msgid_plural "%(quantidade)s notificações pendentes"
+msgstr[0] "%(quantidade)s pending notification"
+msgstr[1] "%(quantidade)s pending notifications"
+
+msgid "Exames organizados dos mais recentes para os mais antigos."
+msgstr "Exams ordered from newest to oldest."
+
+msgid "Filtrar exames"
+msgstr "Filter exams"
+
+msgid "Aplicar filtros"
+msgstr "Apply filters"
+
+msgid "Limpar filtros"
+msgstr "Clear filters"
+
+msgid "Status do exame"
+msgstr "Exam status"
+
+msgid "Todos os status"
+msgstr "All statuses"
+
+msgid "Data e horário inicial"
+msgstr "Start date and time"
+
+msgid "Data e horário final"
+msgstr "End date and time"
+
+msgid "Unidade de saúde"
+msgstr "Healthcare facility"
+
+msgid "Todas as unidades"
+msgstr "All facilities"
+
+msgid "Exames do cidadão"
+msgstr "Citizen exams"
+
+msgid "Data e horário"
+msgstr "Date and time"
+
+msgid "Visualizar anexo do resultado"
+msgstr "View result attachment"
+
+msgid "Nenhum exame encontrado"
+msgstr "No exams found"
+
+msgid "Você ainda não possui exames cadastrados."
+msgstr "You do not have any registered exams yet."
+
+msgid "Confirmado"
+msgstr "Confirmed"
+
+msgid "Em análise"
+msgstr "Under review"
+
+msgid "Resultado disponível"
+msgstr "Result available"
+
+msgid "Cancelado"
+msgstr "Cancelled"
+
+msgid "Paginação"
+msgstr "Pagination"
+
+msgid "Página %(atual)s de %(total)s"
+msgstr "Page %(atual)s of %(total)s"
+
+msgid "Página anterior"
+msgstr "Previous page"
+
+msgid "Próxima página"
+msgstr "Next page"
+
+msgid "Página atual:"
+msgstr "Current page:"
+
+msgid "Ir para a página %(numero)s"
+msgstr "Go to page %(numero)s"
+
+msgid "Mensagens do sistema"
+msgstr "System messages"
+
+msgid "Sucesso:"
+msgstr "Success:"
+
+msgid "Erro:"
+msgstr "Error:"
+
+msgid "Atenção:"
+msgstr "Warning:"
+
+msgid "Informação:"
+msgstr "Information:"

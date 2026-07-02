@@ -1044,6 +1044,13 @@ O projeto deve possuir suporte a `i18n`.
 - não deixar textos visíveis espalhados no JavaScript sem estratégia de tradução;
 - validar o carregamento das traduções com ao menos um cenário demonstrável.
 
+### Adoção progressiva aprovada
+
+- a primeira entrega disponibiliza português do Brasil e inglês para o cidadão;
+- o seletor de idioma é exibido ao lado do sino de notificações;
+- o catálogo inglês inicial cobre o layout compartilhado e a listagem de exames do cidadão;
+- servidor e profissional recebem o seletor e seus textos traduzidos somente após a validação desta primeira entrega.
+
 Não é necessário traduzir toda a aplicação para vários idiomas em uma única tarefa. A infraestrutura e a adoção progressiva devem ser implementadas e validadas conforme o escopo aprovado.
 
 ---

@@ -26,6 +26,9 @@
         {% endif %}
         <div class="user-summary">
           {% include "includes/notification_bell.html" %}
+          {% if request.user.tipo == "CIDADAO" %}
+            {% include "includes/language_switcher.html" %}
+          {% endif %}
           <span class="user-name">{{ request.user.nome }}</span>
         </div>
         <form method="post" action="{% url 'usuarios:logout' %}">

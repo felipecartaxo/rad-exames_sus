@@ -1,6 +1,7 @@
 {% load static i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 <!doctype html>
-<html lang="pt-BR">
+<html lang="{{ LANGUAGE_CODE }}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,7 +10,7 @@
     <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/layout.css' %}">
-    <link rel="stylesheet" href="{% static 'css/components.css' %}?v=20260702-7">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}?v=20260702-8">
     {% block extra_css %}{% endblock %}
   </head>
   <body>

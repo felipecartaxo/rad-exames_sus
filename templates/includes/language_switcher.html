@@ -1,0 +1,17 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+<details class="language-switcher">
+  <summary aria-label="{% trans 'Alterar idioma' %}" title="{% trans 'Alterar idioma' %}">
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22" focusable="false">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M3 12h18M12 3c3 3 4.5 6 4.5 9S15 18 12 21c-3-3-4.5-6-4.5-9S9 6 12 3Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </summary>
+  <form class="language-menu" action="{% url 'set_language' %}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <p>{% trans "Idioma" %}</p>
+    <button class="language-option{% if LANGUAGE_CODE == 'pt-br' %} language-option-current{% endif %}" type="submit" name="language" value="pt-br"{% if LANGUAGE_CODE == "pt-br" %} aria-current="true"{% endif %}>Português</button>
+    <button class="language-option{% if LANGUAGE_CODE == 'en' %} language-option-current{% endif %}" type="submit" name="language" value="en"{% if LANGUAGE_CODE == "en" %} aria-current="true"{% endif %}>English</button>
+  </form>
+</details>
