@@ -30,3 +30,18 @@ class ServidorAutorizadoMixin(AccessMixin):
                 _("Você não tem permissão para acessar esta página.")
             )
         return super().dispatch(request, *args, **kwargs)
+
+
+class ServidorMixin(AccessMixin):
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect_to_login(
+                request.get_full_path(),
+                self.get_login_url(),
+                self.get_redirect_field_name(),
+            )
+        if request.user.tipo != Usuario.Tipo.SERVIDOR:
+            raise PermissionDenied(
+                _("Você não tem permissão para acessar esta página.")
+            )
+        return super().dispatch(request, *args, **kwargs)

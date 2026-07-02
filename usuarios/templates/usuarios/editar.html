@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Editar usuário" %} | ExameSUS{% endblock %}
+
+{% block breadcrumb %}
+  <nav class="breadcrumb" aria-label="{% trans 'Navegação estrutural' %}">
+    <ol>
+      <li><a href="{% url 'usuarios_lista:lista' %}">{% trans "Usuários" %}</a></li>
+      <li aria-current="page">{% trans "Editar usuário" %}</li>
+    </ol>
+  </nav>
+{% endblock %}
+
+{% block content %}
+  <section class="content-card" aria-labelledby="titulo-edicao-usuario">
+    <h1 id="titulo-edicao-usuario">{% trans "Editar usuário" %}</h1>
+    <p>{% blocktrans with nome=usuario_editado.nome %}Atualize os dados de {{ nome }}.{% endblocktrans %}</p>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="error-summary" role="alert">
+          <h2>{% trans "Revise os dados informados" %}</h2>
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+      {% for field in form.visible_fields %}
+        <div class="form-field">
+          {{ field.label_tag }}
+          {{ field }}
+          {% if field.help_text %}<div class="help-text">{{ field.help_text|safe }}</div>{% endif %}
+          {% for error in field.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+      {% endfor %}
+      <div class="form-actions">
+        <button type="submit">{% trans "Salvar alterações" %}</button>
+        <a class="button button-tertiary" href="{% url 'usuarios_lista:lista' %}">{% trans "Cancelar" %}</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

@@ -50,12 +50,13 @@ class UsuarioListViewTests(TestCase):
 
         self.assertEqual(resposta.status_code, 403)
 
-    def test_servidor_sem_permissao_recebe_acesso_negado(self):
+    def test_servidor_sem_permissao_django_visualiza_lista(self):
         self.client.force_login(self.servidor_sem_permissao)
 
         resposta = self.client.get(self.url)
 
-        self.assertEqual(resposta.status_code, 403)
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, self.cidadao.nome)
 
     def test_servidor_com_permissao_visualiza_lista(self):
         self.client.force_login(self.servidor)
@@ -65,7 +66,7 @@ class UsuarioListViewTests(TestCase):
         self.assertEqual(resposta.status_code, 200)
         self.assertContains(resposta, self.cidadao.nome)
 
-    def test_listagem_possui_dez_registros_por_pagina(self):
+    def test_listagem_possui_cinco_registros_por_pagina(self):
         for indice in range(12):
             Usuario.objects.create_user(
                 cpf=f"900000000{indice:02d}",
@@ -78,7 +79,7 @@ class UsuarioListViewTests(TestCase):
         primeira = self.client.get(self.url)
         segunda = self.client.get(self.url, {"page": 2})
 
-        self.assertEqual(len(primeira.context["usuarios"]), 10)
+        self.assertEqual(len(primeira.context["usuarios"]), 5)
         self.assertTrue(primeira.context["page_obj"].has_next())
         self.assertGreater(len(segunda.context["usuarios"]), 0)
 
@@ -105,3 +106,73 @@ class UsuarioListViewTests(TestCase):
 
         self.assertRedirects(resposta, self.url)
 
+    def test_login_de_servidor_sem_permissao_redireciona_para_lista(self):
+        resposta = self.client.post(
+            reverse("usuarios:login"),
+            {
+                "username": self.servidor_sem_permissao.cpf,
+                "password": "senha-segura-123",
+            },
+        )
+
+        self.assertRedirects(resposta, self.url)
+
+    def test_filtra_por_nome_ou_cpf_formatado(self):
+        outro = Usuario.objects.create_user(
+            cpf="93541134780",
+            nome="Maria da Silva",
+            tipo=Usuario.Tipo.CIDADAO,
+            password="senha-segura-123",
+        )
+        self.client.force_login(self.servidor_sem_permissao)
+
+        por_nome = self.client.get(self.url, {"busca": "Maria"})
+        por_cpf = self.client.get(self.url, {"busca": "935.411.347-80"})
+
+        self.assertQuerySetEqual(por_nome.context["usuarios"], [outro])
+        self.assertQuerySetEqual(por_cpf.context["usuarios"], [outro])
+
+    def test_filtra_por_perfil_e_situacao(self):
+        inativo = Usuario.objects.create_user(
+            cpf="93541134780",
+            nome="Servidor inativo",
+            tipo=Usuario.Tipo.SERVIDOR,
+            password="senha-segura-123",
+            is_active=False,
+        )
+        self.client.force_login(self.servidor_sem_permissao)
+
+        resposta = self.client.get(
+            self.url,
+            {"tipo": Usuario.Tipo.SERVIDOR, "situacao": "inativo"},
+        )
+
+        self.assertQuerySetEqual(resposta.context["usuarios"], [inativo])
+
+    def test_listagem_nao_exibe_profissionais(self):
+        profissional = Usuario.objects.create_user(
+            cpf="93541134780",
+            nome="Profissional",
+            tipo=Usuario.Tipo.PROFISSIONAL,
+            password="senha-segura-123",
+        )
+        self.client.force_login(self.servidor_sem_permissao)
+
+        resposta = self.client.get(self.url)
+
+        self.assertNotIn(profissional, resposta.context["usuarios"])
+
+    def test_paginacao_numerica_preserva_filtros(self):
+        for indice in range(12):
+            Usuario.objects.create_user(
+                cpf=f"800000000{indice:02d}",
+                nome=f"Filtrado {indice:02d}",
+                tipo=Usuario.Tipo.CIDADAO,
+                password="senha-segura-123",
+            )
+        self.client.force_login(self.servidor_sem_permissao)
+
+        resposta = self.client.get(self.url, {"busca": "Filtrado"})
+
+        self.assertContains(resposta, "Página atual:")
+        self.assertContains(resposta, "busca=Filtrado&amp;page=2")

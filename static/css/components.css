@@ -220,6 +220,10 @@ button[type="submit"]:hover {
   gap: var(--space-3);
 }
 
+.list-filters-form-users {
+  grid-template-columns: minmax(14rem, 2fr) repeat(2, minmax(10rem, 1fr));
+}
+
 .list-filters .form-field {
   margin: 0;
 }
@@ -285,6 +289,13 @@ button[type="submit"]:hover {
 
 .record-details dd {
   margin: var(--space-1) 0 0;
+}
+
+.record-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
 .status-badge {
@@ -411,7 +422,8 @@ button[type="submit"]:hover {
 }
 
 @media (max-width: 48rem) {
-  .list-filters-form {
+  .list-filters-form,
+  .list-filters-form-users {
     grid-template-columns: repeat(2, minmax(10rem, 1fr));
   }
 }

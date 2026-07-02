@@ -79,7 +79,8 @@ As seguintes decisões estão aprovadas e não devem voltar a ser tratadas como 
 - o conjunto de status de exame é fechado;
 - `Agendamento.data` armazena data e horário;
 - `Exame.data` armazena data e horário;
-- cidadãos autenticados são direcionados para `/exames/`; profissionais são direcionados para sua lista de exames; servidores com `usuarios.view_usuario` são direcionados para `/usuarios/`; servidores sem permissão específica permanecem temporariamente em `/conta/`, e superusuários são direcionados para o Django Admin;
+- cidadãos autenticados são direcionados para `/exames/`; profissionais são direcionados para sua lista de exames; todos os servidores são direcionados para `/usuarios/`; e superusuários são direcionados para o Django Admin;
+- qualquer usuário com perfil `SERVIDOR` pode criar e editar cidadãos e servidores pela área `/usuarios/`, sem permissões Django adicionais; profissionais e superusuários não podem ser alterados por essa área;
 - unidades e profissionais devem ser desativados, e não excluídos fisicamente; profissionais utilizam `Usuario.is_active` como fonte única de ativação;
 - usuários são desativados por meio do campo `is_active` no Django Admin;
 - a API REST deve usar Django REST Framework, com detalhamento incremental posterior.
@@ -778,7 +779,7 @@ Não usar CPF como senha, não criar senha padrão e não enviar credenciais por
 
 ### RF003 — Lista paginada de usuários
 
-O servidor autorizado deve visualizar os usuários de forma paginada.
+Qualquer usuário com perfil `SERVIDOR` deve visualizar cidadãos e servidores de forma paginada, sem exigir uma permissão Django adicional para esta consulta.
 
 Critérios mínimos:
 
@@ -1391,7 +1392,7 @@ A estrutura deve surgir gradualmente. Cada item abaixo é uma entrega separada e
     - criar componentes compartilhados apenas conforme forem usados.
 
 11. **Implementar RF003 — lista paginada de usuários**
-    - restringir a servidor autorizado;
+    - restringir a usuários com perfil `SERVIDOR`;
     - implementar paginação no backend, ordenação e estado vazio;
     - criar apenas a tela necessária e seus testes.
 
