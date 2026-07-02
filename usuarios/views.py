@@ -39,6 +39,8 @@ class LoginCpfView(LoginView):
             return reverse("admin:index")
         if self.request.user.tipo == Usuario.Tipo.CIDADAO:
             return reverse("exames:lista")
+        if self.request.user.tipo == Usuario.Tipo.PROFISSIONAL:
+            return reverse("exames:lista_profissional")
         if (
             self.request.user.tipo == Usuario.Tipo.SERVIDOR
             and self.request.user.has_perm("usuarios.view_usuario")

@@ -276,17 +276,6 @@ button[type="submit"]:hover {
   color: var(--color-text-secondary);
 }
 
-.status-exam-agendado,
-.status-exam-realizado {
-  background: var(--color-info-soft);
-  color: var(--color-primary-dark);
-}
-
-.status-exam-aguardando_confirmacao {
-  background: var(--color-warning-soft);
-  color: var(--color-text-strong);
-}
-
 .status-exam-confirmado {
   background: var(--color-success-soft);
   color: var(--color-success);

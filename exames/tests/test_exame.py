@@ -58,7 +58,7 @@ class ExameTestMixin:
         dados = {
             "tipo": "Hemograma",
             "data": self.data,
-            "status": Exame.Status.AGENDADO,
+            "status": Exame.Status.CONFIRMADO,
             "usuario": self.usuario,
             "unidade": self.unidade,
             "profissional": self.profissional,
@@ -74,7 +74,7 @@ class ExameModelTests(ExameTestMixin, TestCase):
 
         self.assertEqual(exame.tipo, "Hemograma")
         self.assertEqual(exame.data, self.data)
-        self.assertEqual(exame.status, Exame.Status.AGENDADO)
+        self.assertEqual(exame.status, Exame.Status.CONFIRMADO)
         self.assertEqual(exame.resultado, "")
         self.assertEqual(exame.agendamento, self.agendamento)
 
@@ -89,10 +89,7 @@ class ExameModelTests(ExameTestMixin, TestCase):
         self.assertEqual(
             set(Exame.Status.values),
             {
-                "AGENDADO",
-                "AGUARDANDO_CONFIRMACAO",
                 "CONFIRMADO",
-                "REALIZADO",
                 "EM_ANALISE",
                 "RESULTADO_DISPONIVEL",
                 "CANCELADO",
@@ -139,19 +136,10 @@ class ExameModelTests(ExameTestMixin, TestCase):
 class FluxoStatusTests(ExameTestMixin, TestCase):
     def test_mapa_contem_exatamente_as_transicoes_aprovadas(self):
         esperado = {
-            Exame.Status.AGENDADO: {
-                Exame.Status.AGUARDANDO_CONFIRMACAO,
-                Exame.Status.CANCELADO,
-            },
-            Exame.Status.AGUARDANDO_CONFIRMACAO: {
-                Exame.Status.CONFIRMADO,
-                Exame.Status.CANCELADO,
-            },
             Exame.Status.CONFIRMADO: {
-                Exame.Status.REALIZADO,
+                Exame.Status.EM_ANALISE,
                 Exame.Status.CANCELADO,
             },
-            Exame.Status.REALIZADO: {Exame.Status.EM_ANALISE},
             Exame.Status.EM_ANALISE: {Exame.Status.RESULTADO_DISPONIVEL},
             Exame.Status.RESULTADO_DISPONIVEL: set(),
             Exame.Status.CANCELADO: set(),
@@ -179,12 +167,12 @@ class FluxoStatusTests(ExameTestMixin, TestCase):
 
         atualizado = transicionar_status(
             exame,
-            Exame.Status.AGUARDANDO_CONFIRMACAO,
+            Exame.Status.EM_ANALISE,
         )
 
         exame.refresh_from_db()
-        self.assertEqual(atualizado.status, Exame.Status.AGUARDANDO_CONFIRMACAO)
-        self.assertEqual(exame.status, Exame.Status.AGUARDANDO_CONFIRMACAO)
+        self.assertEqual(atualizado.status, Exame.Status.EM_ANALISE)
+        self.assertEqual(exame.status, Exame.Status.EM_ANALISE)
 
     def test_modelo_impede_alteracao_direta_com_transicao_invalida(self):
         exame = self.criar_exame()
@@ -194,11 +182,20 @@ class FluxoStatusTests(ExameTestMixin, TestCase):
             exame.save()
 
         exame.refresh_from_db()
-        self.assertEqual(exame.status, Exame.Status.AGENDADO)
+        self.assertEqual(exame.status, Exame.Status.CONFIRMADO)
 
     def test_servico_rejeita_exame_nao_persistido(self):
-        exame = Exame(status=Exame.Status.AGENDADO)
+        exame = Exame(status=Exame.Status.CONFIRMADO)
 
         with self.assertRaises(ValidationError):
             transicionar_status(exame, Exame.Status.CANCELADO)
 
+    def test_servico_exige_resultado_na_transicao_final(self):
+        exame = self.criar_exame(status=Exame.Status.EM_ANALISE)
+
+        with self.assertRaises(ValidationError):
+            transicionar_status(exame, Exame.Status.RESULTADO_DISPONIVEL)
+
+        exame.refresh_from_db()
+        self.assertEqual(exame.status, Exame.Status.EM_ANALISE)
+        self.assertEqual(exame.resultado, "")

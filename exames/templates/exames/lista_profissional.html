@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Exames atribuídos" %} | ExameSUS{% endblock %}
+
+{% block breadcrumb %}
+  <nav class="breadcrumb" aria-label="{% trans 'Navegação estrutural' %}">
+    <ol>
+      <li><a href="{% url 'usuarios:inicio' %}">{% trans "Conta" %}</a></li>
+      <li aria-current="page">{% trans "Exames atribuídos" %}</li>
+    </ol>
+  </nav>
+{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <h1>{% trans "Exames atribuídos" %}</h1>
+    <p>{% trans "Exames sob sua responsabilidade, dos mais recentes para os mais antigos." %}</p>
+  </header>
+
+  <ul class="record-list" aria-label="{% trans 'Exames atribuídos ao profissional' %}">
+    {% for exame in exames %}
+      <li class="record-card">
+        <div class="record-card-heading">
+          <h2>{{ exame.tipo }}</h2>
+          {% include "components/status_badge.html" with status=exame.status label=exame.get_status_display %}
+        </div>
+        <dl class="record-details">
+          <div>
+            <dt>{% trans "Cidadão" %}</dt>
+            <dd>{{ exame.usuario.nome }}</dd>
+          </div>
+          <div>
+            <dt>{% trans "Data e horário" %}</dt>
+            <dd>{{ exame.data|date:"SHORT_DATETIME_FORMAT" }}</dd>
+          </div>
+          <div>
+            <dt>{% trans "Unidade de saúde" %}</dt>
+            <dd>{{ exame.unidade.nome }}</dd>
+          </div>
+        </dl>
+        <a class="button button-secondary" href="{% url 'exames:detalhe_profissional' exame.pk %}">{% trans "Ver detalhes" %}</a>
+      </li>
+    {% empty %}
+      <li class="empty-state">
+        <h2>{% trans "Nenhum exame atribuído" %}</h2>
+        <p>{% trans "Não há exames sob sua responsabilidade." %}</p>
+      </li>
+    {% endfor %}
+  </ul>
+
+  {% include "components/pagination.html" %}
+{% endblock %}

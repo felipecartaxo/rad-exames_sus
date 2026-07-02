@@ -17,6 +17,7 @@ class ProfissionalModelTests(TestCase):
         profissional = Profissional.objects.create(
             nome="Ana Souza",
             cpf="529.982.247-25",
+            password="hash-de-teste",
             cargo="Médica",
             unidade=self.unidade,
         )
@@ -24,12 +25,14 @@ class ProfissionalModelTests(TestCase):
         self.assertEqual(profissional.cpf, "52998224725")
         self.assertEqual(profissional.unidade, self.unidade)
         self.assertIsNone(profissional.especialidade)
-        self.assertTrue(profissional.ativo)
+        self.assertTrue(profissional.is_active)
+        self.assertEqual(profissional.tipo, "PROFISSIONAL")
 
     def test_cpf_formatado_e_normalizado_antes_da_validacao(self):
         profissional = Profissional(
             nome="Ana Souza",
             cpf="529.982.247-25",
+            password="hash-de-teste",
             cargo="Médica",
             unidade=self.unidade,
         )
@@ -42,6 +45,7 @@ class ProfissionalModelTests(TestCase):
         profissional = Profissional(
             nome="Ana Souza",
             cpf="529.982.247-24",
+            password="hash-de-teste",
             cargo="Médica",
             unidade=self.unidade,
         )
@@ -55,12 +59,14 @@ class ProfissionalModelTests(TestCase):
         Profissional.objects.create(
             nome="Ana Souza",
             cpf="52998224725",
+            password="hash-de-teste",
             cargo="Médica",
             unidade=self.unidade,
         )
         duplicado = Profissional(
             nome="Outra Pessoa",
             cpf="529.982.247-25",
+            password="hash-de-teste",
             cargo="Psicóloga",
             unidade=self.unidade,
         )
@@ -74,6 +80,7 @@ class ProfissionalModelTests(TestCase):
         profissional = Profissional(
             nome="Carlos Lima",
             cpf="111.444.777-35",
+            password="hash-de-teste",
             cargo="Fisioterapeuta",
             especialidade=None,
             unidade=self.unidade,
@@ -85,6 +92,7 @@ class ProfissionalModelTests(TestCase):
         profissional = Profissional(
             nome="",
             cpf="",
+            password="",
             cargo="",
             unidade=None,
         )
@@ -93,7 +101,7 @@ class ProfissionalModelTests(TestCase):
             profissional.full_clean()
 
         self.assertEqual(
-            {"nome", "cpf", "cargo", "unidade"},
+            {"password", "nome", "cpf", "cargo", "unidade"},
             set(contexto.exception.message_dict),
         )
 
@@ -101,6 +109,7 @@ class ProfissionalModelTests(TestCase):
         Profissional.objects.create(
             nome="Ana Souza",
             cpf="52998224725",
+            password="hash-de-teste",
             cargo="Médica",
             unidade=self.unidade,
         )
@@ -112,6 +121,7 @@ class ProfissionalModelTests(TestCase):
         profissional = Profissional.objects.create(
             nome="Ana Souza",
             cpf="52998224725",
+            password="hash-de-teste",
             cargo="Médica",
             unidade=self.unidade,
         )
@@ -125,9 +135,9 @@ class ProfissionalModelTests(TestCase):
         profissional = Profissional(
             nome="Ana Souza",
             cpf="52998224725",
+            password="hash-de-teste",
             cargo="Médica",
             unidade=self.unidade,
         )
 
         self.assertEqual(str(profissional), "Ana Souza")
-

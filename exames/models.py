@@ -5,6 +5,8 @@ from django.utils.translation import gettext_lazy as _
 
 from rede_saude.models import Profissional, UnidadeSaude
 
+from .validators import validar_documento_resultado
+
 
 class Agendamento(models.Model):
     usuario = models.ForeignKey(
@@ -34,13 +36,7 @@ class Agendamento(models.Model):
 
 class Exame(models.Model):
     class Status(models.TextChoices):
-        AGENDADO = "AGENDADO", _("Agendado")
-        AGUARDANDO_CONFIRMACAO = (
-            "AGUARDANDO_CONFIRMACAO",
-            _("Aguardando confirmação"),
-        )
         CONFIRMADO = "CONFIRMADO", _("Confirmado")
-        REALIZADO = "REALIZADO", _("Realizado")
         EM_ANALISE = "EM_ANALISE", _("Em análise")
         RESULTADO_DISPONIVEL = "RESULTADO_DISPONIVEL", _("Resultado disponível")
         CANCELADO = "CANCELADO", _("Cancelado")
@@ -49,6 +45,13 @@ class Exame(models.Model):
     data = models.DateTimeField(_("data e horário"))
     status = models.CharField(_("status"), max_length=23, choices=Status.choices)
     resultado = models.TextField(_("resultado"), blank=True, default="")
+    documento_resultado = models.FileField(
+        _("documento do resultado"),
+        upload_to="resultados/",
+        validators=[validar_documento_resultado],
+        blank=True,
+        default="",
+    )
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -64,7 +67,7 @@ class Exame(models.Model):
     profissional = models.ForeignKey(
         Profissional,
         on_delete=models.PROTECT,
-        related_name="exames",
+        related_name="exames_atribuidos",
         verbose_name=_("profissional"),
     )
     agendamento = models.ForeignKey(

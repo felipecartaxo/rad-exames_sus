@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
@@ -12,11 +13,27 @@ class UsuarioCreationAdminForm(UserCreationForm):
         model = Usuario
         fields = ("cpf", "nome", "tipo")
 
+    def clean_tipo(self):
+        tipo = self.cleaned_data["tipo"]
+        if tipo == Usuario.Tipo.PROFISSIONAL:
+            raise forms.ValidationError(
+                _("Cadastre profissionais na área de profissionais de saúde.")
+            )
+        return tipo
+
 
 class UsuarioChangeAdminForm(UserChangeForm):
     class Meta(UserChangeForm.Meta):
         model = Usuario
         fields = "__all__"
+
+    def clean_tipo(self):
+        tipo = self.cleaned_data["tipo"]
+        if tipo == Usuario.Tipo.PROFISSIONAL:
+            raise forms.ValidationError(
+                _("Edite profissionais na área de profissionais de saúde.")
+            )
+        return tipo
 
 
 @admin.register(Usuario)
@@ -60,6 +77,11 @@ class UsuarioAdmin(UserAdmin):
     )
     readonly_fields = ("last_login",)
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).exclude(
+            tipo=Usuario.Tipo.PROFISSIONAL
+        )
+
     def has_delete_permission(self, request, obj=None):
         return False
 
@@ -90,4 +112,3 @@ class UsuarioAdmin(UserAdmin):
             % quantidade,
             messages.SUCCESS,
         )
-

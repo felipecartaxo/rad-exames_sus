@@ -52,7 +52,7 @@ class UsuarioManagerTests(TestCase):
             Usuario.objects.create_user(
                 cpf="11144477735",
                 nome="Pessoa de Teste",
-                tipo="PROFISSIONAL",
+                tipo="OUTRO",
             )
 
     def test_create_superuser_define_convencoes_administrativas(self):
@@ -76,6 +76,5 @@ class UsuarioModelTests(TestCase):
     def test_tipo_possui_somente_valores_autorizados(self):
         self.assertEqual(
             set(Usuario.Tipo.values),
-            {"CIDADAO", "SERVIDOR"},
+            {"CIDADAO", "SERVIDOR", "PROFISSIONAL"},
         )
-

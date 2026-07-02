@@ -17,9 +17,13 @@ class ServidorAutorizadoMixin(AccessMixin):
                 self.get_redirect_field_name(),
             )
 
+        permissoes = self.permission_required
+        if isinstance(permissoes, str):
+            permissoes = (permissoes,)
         autorizado = (
             request.user.tipo == Usuario.Tipo.SERVIDOR
-            and request.user.has_perm(self.permission_required)
+            and permissoes
+            and request.user.has_perms(permissoes)
         )
         if not autorizado:
             raise PermissionDenied(

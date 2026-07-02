@@ -76,7 +76,11 @@ class NotificacaoServiceTests(NotificacaoTestMixin, TestCase):
     def test_transicao_para_resultado_disponivel_cria_notificacao(self):
         exame = self.criar_exame()
 
-        transicionar_status(exame, Exame.Status.RESULTADO_DISPONIVEL)
+        transicionar_status(
+            exame,
+            Exame.Status.RESULTADO_DISPONIVEL,
+            resultado="Resultado disponível para acompanhamento.",
+        )
 
         notificacao = Notificacao.objects.get(exame=exame)
         self.assertEqual(notificacao.usuario, self.cidadao)

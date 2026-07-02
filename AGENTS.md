@@ -62,23 +62,25 @@ As seguintes decisões estão aprovadas e não devem voltar a ser tratadas como 
 
 - autenticação por CPF e senha;
 - cidadãos criam a própria conta e definem a própria senha;
-- os perfis autenticáveis de domínio são Cidadão e Servidor;
-- `Profissional` é um modelo de domínio independente e não é um usuário autenticável;
+- os perfis autenticáveis de domínio são Cidadão, Servidor e Profissional;
+- `Profissional` é uma especialização autenticável de `Usuario`, implementada por herança multi-tabela, e utiliza CPF e senha;
+- profissionais são criados exclusivamente pelo superusuário no Django Admin e não possuem autocadastro;
 - o administrador do projeto é um superusuário do Django, criado com `python manage.py createsuperuser`, e utiliza exclusivamente o Django Admin;
 - `cargo` e `especialidade` são campos distintos no cadastro de profissional;
 - `especialidade` é opcional;
 - comparação de resultados foi removida do escopo;
 - notificações serão apresentadas por sino e badge numérica ao lado do nome do usuário;
 - o Codex pode definir o evento de domínio mais adequado para gerar as notificações, desde que documente a decisão e permaneça na pilha autorizada;
-- uma notificação única é criada explicitamente quando o exame transiciona para `RESULTADO_DISPONIVEL`, orientando o cidadão a consultar o resultado e realizar o acompanhamento necessário;
+- uma notificação é criada explicitamente para o profissional na atribuição inicial do exame;
+- uma notificação é criada explicitamente para o cidadão quando o exame transiciona para `RESULTADO_DISPONIVEL`, orientando-o a consultar o resultado e realizar o acompanhamento necessário;
 - apenas `UnidadeSaude.contato` e `Profissional.especialidade` podem ser nulos entre os campos de domínio já definidos;
 - uma unidade pode existir temporariamente sem profissionais;
 - cardinalidades descritas na seção 5 devem ser respeitadas;
 - o conjunto de status de exame é fechado;
 - `Agendamento.data` armazena data e horário;
 - `Exame.data` armazena data e horário;
-- cidadãos autenticados são direcionados para `/exames/`; servidores com `usuarios.view_usuario` são direcionados para `/usuarios/`; servidores sem permissão específica permanecem temporariamente em `/conta/`, e superusuários são direcionados para o Django Admin;
-- unidades e profissionais devem ser desativados, e não excluídos fisicamente;
+- cidadãos autenticados são direcionados para `/exames/`; profissionais são direcionados para sua lista de exames; servidores com `usuarios.view_usuario` são direcionados para `/usuarios/`; servidores sem permissão específica permanecem temporariamente em `/conta/`, e superusuários são direcionados para o Django Admin;
+- unidades e profissionais devem ser desativados, e não excluídos fisicamente; profissionais utilizam `Usuario.is_active` como fonte única de ativação;
 - usuários são desativados por meio do campo `is_active` no Django Admin;
 - a API REST deve usar Django REST Framework, com detalhamento incremental posterior.
 
@@ -314,7 +316,7 @@ Responsável por:
 - autocadastro do cidadão;
 - logout;
 - listagem paginada de usuários;
-- perfis `CIDADAO` e `SERVIDOR`;
+- perfis `CIDADAO`, `SERVIDOR` e `PROFISSIONAL`;
 - ativação e desativação por `is_active`;
 - forms, views e permissões relacionadas a usuários.
 
@@ -326,9 +328,10 @@ Responsável por:
 
 - `UnidadeSaude`;
 - `Profissional`;
+- especialização autenticável de `Usuario` para o profissional;
 - validações desses modelos;
 - configuração de ambos no Django Admin;
-- desativação e reativação;
+- desativação e reativação do profissional por `Usuario.is_active`;
 - filtragem de unidades ativas para novos vínculos.
 
 Não criar views ou templates públicos para esses cadastros enquanto RF007 e RF008 permanecerem atendidos pelo Django Admin.
@@ -346,6 +349,9 @@ Responsável por:
 - lista de exames do cidadão;
 - histórico;
 - detalhes e resultados;
+- criação transacional de agendamento e exame pelo servidor autorizado;
+- lista e detalhe dos exames atribuídos ao profissional autenticado;
+- transições de status e registro de resultado pelo profissional responsável;
 - consultas restritas ao usuário autenticado;
 - API relacionada a exames, quando aprovada.
 
@@ -362,7 +368,7 @@ exame.unidade_id == exame.agendamento.unidade_id
 
 Essa validação evita registros contraditórios e não modifica o modelo aprovado.
 
-Não impor silenciosamente que `exame.profissional.unidade_id == exame.unidade_id`. Essa regra depende de decisão específica antes da implementação do fluxo que cria ou altera exames.
+Não impor que `exame.profissional.unidade_id == exame.unidade_id`. Está aprovado associar ao exame um profissional cuja unidade principal seja diferente da unidade do exame.
 
 #### `notificacoes`
 
@@ -376,6 +382,8 @@ Responsável por:
 - página de notificações;
 - serviço explícito de criação;
 - badge de notificações não lidas no cabeçalho.
+
+A notificação deve identificar o evento que a originou e admitir múltiplos destinatários e eventos para o mesmo exame. A unicidade deve ser garantida pela combinação de exame, destinatário e tipo de evento.
 
 Um context processor pode fornecer a quantidade de notificações não lidas aos templates globais. A consulta deve ser executada apenas para usuário autenticado e não pode expor notificações de terceiros.
 
@@ -516,8 +524,9 @@ Valores permitidos para `tipo`:
 
 - `CIDADAO`;
 - `SERVIDOR`.
+- `PROFISSIONAL`.
 
-`Profissional` não é um valor de `tipo`, pois o profissional de saúde não é um usuário autenticável neste projeto.
+`PROFISSIONAL` identifica a identidade autenticável especializada pelo modelo de domínio `Profissional`.
 
 Utilize `TextChoices` ou mecanismo equivalente do próprio Django para manter os valores centralizados. Não adicionar outro valor de perfil sem aprovação.
 
@@ -532,6 +541,7 @@ Campos:
 - `data`, obrigatória;
 - `status`, obrigatório;
 - `resultado`, não nulo;
+- `documento_resultado`, opcional, com ausência representada por string vazia e sem `NULL`;
 - `usuario_id`, obrigatório;
 - `unidade_id`, obrigatório;
 - `profissional_id`, obrigatório;
@@ -539,10 +549,7 @@ Campos:
 
 Valores permitidos para `status`:
 
-- `AGENDADO` — “Agendado”;
-- `AGUARDANDO_CONFIRMACAO` — “Aguardando confirmação”;
 - `CONFIRMADO` — “Confirmado”;
-- `REALIZADO` — “Realizado”;
 - `EM_ANALISE` — “Em análise”;
 - `RESULTADO_DISPONIVEL` — “Resultado disponível”;
 - `CANCELADO` — “Cancelado”.
@@ -552,29 +559,23 @@ O conjunto de status é fechado. Não criar status adicional sem aprovação.
 Transições aprovadas:
 
 ```text
-AGENDADO
-├── AGUARDANDO_CONFIRMACAO
-│   ├── CONFIRMADO
-│   │   ├── REALIZADO
-│   │   │   └── EM_ANALISE
-│   │   │       └── RESULTADO_DISPONIVEL
-│   │   └── CANCELADO
-│   └── CANCELADO
+CONFIRMADO
+├── EM_ANALISE
+│   └── RESULTADO_DISPONIVEL
 └── CANCELADO
 ```
 
 Regras:
 
-- `AGENDADO` pode mudar para `AGUARDANDO_CONFIRMACAO` ou `CANCELADO`;
-- `AGUARDANDO_CONFIRMACAO` pode mudar para `CONFIRMADO` ou `CANCELADO`;
-- `CONFIRMADO` pode mudar para `REALIZADO` ou `CANCELADO`;
-- `REALIZADO` pode mudar apenas para `EM_ANALISE`;
+- `CONFIRMADO` pode mudar para `EM_ANALISE` ou `CANCELADO`;
 - `EM_ANALISE` pode mudar apenas para `RESULTADO_DISPONIVEL`;
 - `CANCELADO` e `RESULTADO_DISPONIVEL` são estados finais no fluxo aprovado;
 - não permitir regressão de status ou transição diferente das listadas;
 - validar as transições no backend e cobri-las com testes automatizados.
 
 Como `resultado` não pode ser nulo e pode ainda não existir em exames não concluídos, represente a ausência de resultado com string vazia no banco (`null=False`, podendo usar `blank=True` e valor padrão vazio). A interface deve apresentar uma mensagem como “Resultado ainda não disponível”, e nunca exibir apenas um campo vazio.
+
+`documento_resultado` é um único arquivo PDF opcional, limitado a 10 MB e armazenado localmente em área privada. Somente o cidadão proprietário e o profissional responsável podem baixá-lo por rota protegida. O profissional pode enviá-lo ou substituí-lo apenas na transição para `RESULTADO_DISPONIVEL`; ao substituir, o arquivo anterior deve ser removido sem excluir o exame.
 
 ### 5.3 Agendamento
 
@@ -601,13 +602,10 @@ Campos:
 
 Campos:
 
-- `id`;
-- `nome`, obrigatório;
-- `cpf`, único e obrigatório;
+- identidade herdada de `Usuario`, incluindo `id`, `nome`, `cpf`, senha e `is_active`;
 - `cargo`, obrigatório;
 - `especialidade`, opcional e anulável;
 - `unidade_id`, obrigatório;
-- `ativo`, booleano, obrigatório, com padrão `True`.
 
 Regras:
 
@@ -615,8 +613,13 @@ Regras:
 - `especialidade` é utilizada quando aplicável e pode ficar nula, inclusive para profissional sem especialidade cadastrada ou clínico geral;
 - não exigir especialidade de todos os profissionais;
 - não substituir `cargo` por `especialidade` nem combinar ambos em um único campo.
+- todo `Profissional` deve corresponder a exatamente um `Usuario` com `tipo=PROFISSIONAL`;
+- o superusuário cria a identidade profissional e define sua senha no Django Admin;
+- profissionais migrados de cadastros anteriores recebem senha inutilizável até que o superusuário defina uma senha;
+- conflitos de CPF entre cadastros legados de usuário e profissional devem interromper a migração com erro claro, sem associação automática;
+- não oferecer autocadastro profissional.
 
-`ativo` é autorizado para permitir desativação sem exclusão física.
+`Usuario.is_active` é a fonte única de ativação e desativação do profissional.
 
 ### 5.6 Nulabilidade
 
@@ -644,6 +647,7 @@ Campos técnicos gerenciados pelo Django podem seguir as exigências do framewor
 - um profissional solicita ou realiza zero ou vários exames;
 - cada exame é associado a exatamente um profissional;
 - cada profissional pertence a exatamente uma unidade;
+- cada profissional especializa exatamente um usuário com `tipo=PROFISSIONAL`;
 - uma unidade pode alocar zero ou vários profissionais, inclusive permanecer temporariamente sem nenhum;
 
 Use `ForeignKey` no lado “vários”. Não transforme essas relações em `ManyToManyField` ou `OneToOneField` sem aprovação.
@@ -651,8 +655,8 @@ Use `ForeignKey` no lado “vários”. Não transforme essas relações em `Man
 ### 5.8 Integridade referencial e desativação
 
 - não oferecer exclusão física de usuários, unidades ou profissionais pela interface ou API;
-- unidades e profissionais devem ser desativados por flag booleana;
-- usuários autenticáveis devem utilizar o mecanismo `is_active` do Django;
+- unidades devem ser desativadas por flag booleana própria;
+- usuários autenticáveis, incluindo profissionais, devem utilizar o mecanismo `is_active` do Django;
 - ativação e desativação de usuários devem ocorrer pelo Django Admin, sem necessidade de tela própria na aplicação comum;
 - registros desativados devem continuar visíveis em históricos já existentes;
 - registros desativados não devem aparecer como opção para novos vínculos, salvo necessidade administrativa explicitamente aprovada;
@@ -668,7 +672,7 @@ Toda mudança de schema deve ser acompanhada de migration e testes apropriados.
 - não substitua os modelos definidos por estruturas genéricas;
 - não altere nomes ou relações apenas por preferência técnica;
 - não duplique CPF em estruturas novas sem necessidade e sem regra clara de sincronização;
-- não crie vínculo entre `Usuario` e `Profissional`; são entidades independentes neste projeto.
+- não duplique nome, CPF, senha ou estado de ativação em `Profissional`; esses dados pertencem à identidade `Usuario` herdada.
 
 ---
 
@@ -680,20 +684,20 @@ Usuário autenticável que procura atendimento de saúde. Pode criar a própria 
 
 ### Servidor
 
-Usuário autenticável com atuação administrativa na aplicação comum, não necessariamente profissional de saúde. Suas permissões devem ser explicitamente definidas para cada funcionalidade.
+Usuário autenticável que medeia o atendimento entre cidadão e profissional. Com as permissões Django necessárias, cria conjuntamente o agendamento e o exame, associa cidadão, unidade e profissional e não executa o exame em nome do profissional.
 
 ### Profissional de Saúde
 
-Entidade de domínio representada pelo modelo `Profissional`. Pode ser médico, psicólogo, psiquiatra, fisioterapeuta ou outro profissional cadastrado.
+Usuário autenticável e entidade de domínio representada pelo modelo `Profissional`, que especializa `Usuario`. Pode ser médico, psicólogo, psiquiatra, fisioterapeuta ou outro profissional cadastrado.
 
 Neste projeto, `Profissional`:
 
-- não herda do modelo de usuário;
-- não possui login;
-- não possui senha;
-- não é um perfil de `Usuario.tipo`;
-- não acessa diretamente páginas autenticadas ou endpoints em nome próprio;
-- pode ser associado a exames como profissional solicitante ou responsável.
+- autentica com CPF e senha e possui `Usuario.tipo=PROFISSIONAL`;
+- é criado exclusivamente pelo superusuário no Django Admin;
+- acessa apenas os exames nos quais está indicado como profissional responsável;
+- pode executar as transições aprovadas, incluindo cancelamento somente nos estados permitidos;
+- registra obrigatoriamente um resultado não vazio ao transicionar de `EM_ANALISE` para `RESULTADO_DISPONIVEL`;
+- não pode alterar cidadão, unidade, profissional responsável, tipo ou datas do exame.
 
 ### Administrador do Django
 
@@ -716,7 +720,9 @@ Esse administrador:
 
 - um cidadão só pode acessar seus próprios dados, exames, agendamentos, histórico e notificações;
 - um servidor só pode executar ações expressamente permitidas;
-- um profissional não pode ser usado como identidade autenticada;
+- um cidadão não pode criar agendamentos ou exames;
+- um servidor autorizado cria o agendamento e o exame de forma transacional, sempre com status inicial `CONFIRMADO`;
+- um profissional só pode consultar e operar exames atribuídos a ele;
 - funções administrativas de RF007 e RF008 devem ser implementadas no Django Admin;
 - autenticação não substitui autorização;
 - toda restrição deve existir no backend, não apenas na interface;
@@ -728,7 +734,7 @@ Esse administrador:
 
 ## 7. Requisitos funcionais obrigatórios
 
-Todos os requisitos RF001 a RF010 são obrigatórios. A implementação deve respeitar a ordem aprovada pelo responsável e ocorrer uma funcionalidade por vez.
+Todos os requisitos RF001 a RF011 são obrigatórios. A implementação deve respeitar a ordem aprovada pelo responsável e ocorrer uma funcionalidade por vez.
 
 ### RF001 — Login com CPF e senha
 
@@ -753,7 +759,7 @@ Não implementar login por nome de usuário ou e-mail.
 
 O próprio cidadão deve criar sua conta e definir sua senha para acessar o sistema.
 
-Esta decisão substitui a redação anterior que atribuía o cadastro a um profissional de saúde, pois `Profissional` não é um usuário autenticável no modelo aprovado.
+Esta decisão não autoriza cidadão, servidor ou profissional a criar contas de profissional. O cadastro profissional é exclusivo do superusuário no Django Admin.
 
 Critérios mínimos:
 
@@ -913,7 +919,43 @@ Critérios mínimos:
 - testes para usuário anônimo, perfil autorizado, perfil não autorizado, usuário inativo e acesso a objeto de terceiro;
 - uso das proteções padrão do Django, incluindo CSRF nas operações HTML.
 
-### RF010 — Testes automatizados
+### RF010 — Gestão operacional de agendamentos e exames
+
+O servidor autorizado deve mediar o atendimento criando o agendamento e o exame para um cidadão e indicando o profissional responsável. O cidadão não pode criar exames. O profissional indicado deve acompanhar e executar o fluxo do exame em área autenticada própria.
+
+#### Criação pelo servidor
+
+- utilizar um único formulário para criar `Agendamento` e `Exame` de forma transacional;
+- permitir apenas cidadão, unidade e profissional ativos;
+- exigir perfil `SERVIDOR` e permissões Django para adicionar agendamento e exame;
+- solicitar datas independentes e exigir que a data do exame seja posterior à data do agendamento;
+- permitir profissional cuja unidade principal seja diferente da unidade do exame;
+- criar o exame obrigatoriamente em `CONFIRMADO`;
+- impedir criação por cidadão ou profissional;
+- criar uma notificação única de atribuição para o profissional indicado.
+
+#### Operação pelo profissional
+
+- apresentar lista paginada contendo somente exames atribuídos ao profissional autenticado;
+- apresentar uma tela de detalhes com dados do exame, cidadão, unidade e agendamento;
+- permitir apenas as próximas transições definidas no fluxo aprovado;
+- permitir cancelamento somente nos estados que já admitem `CANCELADO`;
+- exigir e salvar resultado não vazio na mesma transação que altera `EM_ANALISE` para `RESULTADO_DISPONIVEL`;
+- permitir, nessa mesma transição, anexar ou substituir um único PDF opcional de até 10 MB referente ao resultado;
+- disponibilizar o anexo somente por download protegido ao cidadão proprietário e ao profissional responsável;
+- impedir alteração de cidadão, unidade, profissional, tipo e datas;
+- exigir perfil `PROFISSIONAL`, permissão Django aplicável e vínculo do exame ao profissional autenticado.
+
+#### Notificações e navegação
+
+- reutilizar sino, badge, página e estado de leitura para cidadão e profissional;
+- garantir isolamento por destinatário;
+- permitir notificações distintas de atribuição e resultado disponível no mesmo exame;
+- garantir unicidade por exame, destinatário e tipo de evento;
+- redirecionar profissional autenticado para sua lista de exames;
+- manter cidadãos em `/exames/`, servidores nos destinos autorizados e superusuários no Django Admin.
+
+### RF011 — Testes automatizados
 
 As funcionalidades principais devem possuir testes automatizados.
 
@@ -1113,10 +1155,7 @@ Cada status deve manter o mesmo texto, cor e componente em todo o sistema.
 
 Mapeamento visual obrigatório:
 
-- Agendado: fundo azul-claro, texto azul institucional;
-- Aguardando confirmação: fundo amarelo-claro, texto escuro;
 - Confirmado: fundo verde-claro, texto verde;
-- Realizado: fundo azul-claro, texto azul-escuro;
 - Resultado disponível: fundo azul institucional suave, texto azul institucional;
 - Cancelado: fundo vermelho-claro, texto vermelho;
 - Em análise: fundo cinza-claro, texto cinza-escuro.
@@ -1261,7 +1300,7 @@ Cada unidade implementada deve trazer os testes diretamente relacionados.
 
 ## 16. Funcionalidades opcionais
 
-Somente considerar após RF001 a RF010, arquitetura MVT, paginação, autenticação, autorização, API REST, testes e i18n estarem implementados, funcionando e validados.
+Somente considerar após RF001 a RF011, arquitetura MVT, paginação, autenticação, autorização, API REST, testes e i18n estarem implementados, funcionando e validados.
 
 ### Opcionais já previstos
 
@@ -1391,17 +1430,23 @@ A estrutura deve surgir gradualmente. Cada item abaixo é uma entrega separada e
     - gerar e validar catálogos conforme a estratégia aprovada;
     - demonstrar ao menos um cenário de tradução funcional.
 
-18. **Consolidar RF010 e a suíte de testes**
+18. **Implementar RF010 — gestão operacional de agendamentos e exames**
+    - atualizar `Profissional` para especializar `Usuario`, migrar os dados e configurar seu cadastro autenticável no Django Admin;
+    - implementar separadamente e validar, nesta ordem: criação transacional pelo servidor, lista do profissional e detalhe com transições e resultado;
+    - generalizar notificações e implementar os eventos de atribuição e espera de confirmação;
+    - consolidar permissões, isolamento por objeto, navegação e testes integrados do fluxo.
+
+19. **Consolidar RF011 e a suíte de testes**
     - revisar cobertura dos requisitos principais;
     - completar testes ausentes identificados na revisão;
     - executar a suíte completa e documentar os comandos.
 
-19. **Revisar critérios acadêmicos e documentação**
+20. **Revisar critérios acadêmicos e documentação**
     - confirmar MVT, paginação, autenticação, autorização, API REST, testes e i18n;
     - atualizar `README.md` e documentos em `docs/` conforme o que realmente foi implementado;
     - verificar migrations, acessibilidade, identidade visual e consistência do projeto.
 
-20. **Avaliar funcionalidades opcionais**
+21. **Avaliar funcionalidades opcionais**
     - considerar dashboard administrativo e exportação para PDF somente após todos os itens obrigatórios estarem funcionando e validados;
     - implementar apenas um opcional por vez e consultar antes de adicionar dependências.
 

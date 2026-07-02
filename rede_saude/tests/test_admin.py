@@ -45,6 +45,23 @@ class RedeSaudeAdminTests(TestCase):
             with self.subTest(modelo=admin_model.model.__name__):
                 self.assertFalse(admin_model.has_delete_permission(self.request))
 
+    def test_somente_superusuario_pode_criar_profissional(self):
+        admin_profissional = ProfissionalAdmin(Profissional, admin.site)
+        servidor = Usuario.objects.create_user(
+            cpf="12345678909",
+            nome="Servidor de Teste",
+            tipo=Usuario.Tipo.SERVIDOR,
+            password="senha-segura-123",
+            is_staff=True,
+        )
+        requisicao_servidor = RequestFactory().get("/admin/rede_saude/")
+        requisicao_servidor.user = servidor
+
+        self.assertTrue(admin_profissional.has_add_permission(self.request))
+        self.assertFalse(
+            admin_profissional.has_add_permission(requisicao_servidor)
+        )
+
     def test_novo_profissional_lista_apenas_unidades_ativas(self):
         formulario = ProfissionalAdminForm()
 
@@ -76,13 +93,23 @@ class RedeSaudeAdminTests(TestCase):
                 "cargo": "Médico",
                 "especialidade": "Clínica geral",
                 "unidade": self.unidade_ativa.pk,
-                "ativo": True,
+                "is_active": True,
+                "password1": "senha-profissional-123",
+                "password2": "senha-profissional-123",
             }
         )
 
         self.assertTrue(formulario.is_valid(), formulario.errors)
         profissional = formulario.save()
         self.assertEqual(profissional.cpf, "11144477735")
+        self.assertEqual(profissional.tipo, Usuario.Tipo.PROFISSIONAL)
+        self.assertTrue(profissional.check_password("senha-profissional-123"))
+
+        autenticado = self.client.login(
+            cpf="111.444.777-35",
+            password="senha-profissional-123",
+        )
+        self.assertTrue(autenticado)
 
     def test_desativacao_de_unidade_exige_confirmacao(self):
         url = reverse("admin:rede_saude_unidadesaude_changelist")
@@ -119,11 +146,11 @@ class RedeSaudeAdminTests(TestCase):
             {**selecao, "action": "desativar_profissionais"},
         )
         profissional.refresh_from_db()
-        self.assertFalse(profissional.ativo)
+        self.assertFalse(profissional.is_active)
 
         self.client.post(
             url,
             {**selecao, "action": "ativar_profissionais"},
         )
         profissional.refresh_from_db()
-        self.assertTrue(profissional.ativo)
+        self.assertTrue(profissional.is_active)

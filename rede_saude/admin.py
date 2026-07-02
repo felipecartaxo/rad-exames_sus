@@ -75,17 +75,20 @@ class ProfissionalAdmin(SemExclusaoFisicaAdminMixin, admin.ModelAdmin):
         "cargo",
         "especialidade",
         "unidade",
-        "ativo",
+        "is_active",
     )
-    list_filter = ("ativo", "cargo", "unidade")
+    list_filter = ("is_active", "cargo", "unidade")
     search_fields = ("nome", "cpf", "cargo", "especialidade", "unidade__nome")
     ordering = ("nome",)
     list_select_related = ("unidade",)
     actions = ("ativar_profissionais", "desativar_profissionais")
 
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
     @admin.action(description=_("Ativar profissionais selecionados"))
     def ativar_profissionais(self, request, queryset):
-        quantidade = queryset.update(ativo=True)
+        quantidade = queryset.update(is_active=True)
         self.message_user(
             request,
             ngettext(
@@ -99,7 +102,7 @@ class ProfissionalAdmin(SemExclusaoFisicaAdminMixin, admin.ModelAdmin):
 
     @admin.action(description=_("Desativar profissionais selecionados"))
     def desativar_profissionais(self, request, queryset):
-        quantidade = queryset.update(ativo=False)
+        quantidade = queryset.update(is_active=False)
         self.message_user(
             request,
             ngettext(
@@ -110,4 +113,3 @@ class ProfissionalAdmin(SemExclusaoFisicaAdminMixin, admin.ModelAdmin):
             % quantidade,
             messages.SUCCESS,
         )
-

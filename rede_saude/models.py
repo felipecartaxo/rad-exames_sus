@@ -1,5 +1,8 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
+from usuarios.models import Usuario
 
 from .validators import normalizar_cpf, validar_cpf
 
@@ -23,14 +26,7 @@ class UnidadeSaude(models.Model):
         return self.nome
 
 
-class Profissional(models.Model):
-    nome = models.CharField(_("nome"), max_length=150)
-    cpf = models.CharField(
-        _("CPF"),
-        max_length=11,
-        unique=True,
-        validators=[validar_cpf],
-    )
+class Profissional(Usuario):
     cargo = models.CharField(_("cargo"), max_length=100)
     especialidade = models.CharField(
         _("especialidade"),
@@ -44,7 +40,6 @@ class Profissional(models.Model):
         related_name="profissionais",
         verbose_name=_("unidade de saúde"),
     )
-    ativo = models.BooleanField(_("ativo"), default=True)
 
     class Meta:
         verbose_name = _("profissional")
@@ -52,10 +47,19 @@ class Profissional(models.Model):
 
     def clean_fields(self, exclude=None):
         self.cpf = normalizar_cpf(self.cpf)
+        self.tipo = Usuario.Tipo.PROFISSIONAL
         super().clean_fields(exclude=exclude)
 
+    def clean(self):
+        super().clean()
+        try:
+            validar_cpf(self.cpf)
+        except ValidationError as erro:
+            raise ValidationError({"cpf": erro.messages}) from erro
+        self.tipo = Usuario.Tipo.PROFISSIONAL
+
     def save(self, *args, **kwargs):
-        self.cpf = normalizar_cpf(self.cpf)
+        self.tipo = Usuario.Tipo.PROFISSIONAL
         super().save(*args, **kwargs)
 
     def __str__(self):

@@ -39,6 +39,20 @@ class UsuarioAdminTests(TestCase):
         usuario = formulario.save()
         self.assertTrue(usuario.check_password("uma-senha-forte-123"))
 
+    def test_formulario_generico_nao_cria_profissional_sem_perfil(self):
+        formulario = UsuarioCreationAdminForm(
+            data={
+                "cpf": "11144477735",
+                "nome": "Profissional de Teste",
+                "tipo": Usuario.Tipo.PROFISSIONAL,
+                "password1": "uma-senha-forte-123",
+                "password2": "uma-senha-forte-123",
+            }
+        )
+
+        self.assertFalse(formulario.is_valid())
+        self.assertIn("tipo", formulario.errors)
+
     def test_usuario_sem_acesso_administrativo_nao_acessa_admin(self):
         usuario = Usuario.objects.create_user(
             cpf="11144477735",

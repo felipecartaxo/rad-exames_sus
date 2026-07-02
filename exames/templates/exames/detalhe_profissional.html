@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ exame.tipo }} | ExameSUS{% endblock %}
+
+{% block breadcrumb %}
+  <nav class="breadcrumb" aria-label="{% trans 'Navegação estrutural' %}">
+    <ol>
+      <li><a href="{% url 'exames:lista_profissional' %}">{% trans "Exames atribuídos" %}</a></li>
+      <li aria-current="page">{{ exame.tipo }}</li>
+    </ol>
+  </nav>
+{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <h1>{{ exame.tipo }}</h1>
+    {% include "components/status_badge.html" with status=exame.status label=exame.get_status_display %}
+  </header>
+
+  <section class="content-card" aria-labelledby="dados-exame">
+    <h2 id="dados-exame">{% trans "Dados do exame" %}</h2>
+    <dl class="record-details">
+      <div><dt>{% trans "Cidadão" %}</dt><dd>{{ exame.usuario.nome }}</dd></div>
+      <div><dt>{% trans "Data do agendamento" %}</dt><dd>{{ exame.agendamento.data|date:"SHORT_DATETIME_FORMAT" }}</dd></div>
+      <div><dt>{% trans "Data do exame" %}</dt><dd>{{ exame.data|date:"SHORT_DATETIME_FORMAT" }}</dd></div>
+      <div><dt>{% trans "Unidade de saúde" %}</dt><dd>{{ exame.unidade.nome }}</dd></div>
+      <div><dt>{% trans "Profissional responsável" %}</dt><dd>{{ exame.profissional.nome }}</dd></div>
+    </dl>
+
+    {% if exame.resultado %}
+      <h2>{% trans "Resultado" %}</h2>
+      <p>{{ exame.resultado|linebreaksbr }}</p>
+    {% endif %}
+    {% if exame.documento_resultado %}
+      <p><a href="{% url 'exames:documento_resultado' exame.pk %}">{% trans "Baixar documento do resultado" %}</a></p>
+    {% endif %}
+  </section>
+
+  {% if possui_transicoes %}
+    <section class="content-card" aria-labelledby="atualizar-exame">
+      <h2 id="atualizar-exame">{% trans "Atualizar estado do exame" %}</h2>
+      {% if form.errors %}
+        <div class="error-summary" role="alert" tabindex="-1">
+          <h3>{% trans "Revise os dados informados" %}</h3>
+        </div>
+      {% endif %}
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {% for field in form.visible_fields %}
+          <div class="form-field">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}<div class="help-text">{{ field.help_text }}</div>{% endif %}
+            {% for error in field.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+          </div>
+        {% endfor %}
+        {% for error in form.non_field_errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        <div class="form-actions">
+          <button type="submit">{% trans "Atualizar exame" %}</button>
+        </div>
+      </form>
+    </section>
+  {% else %}
+    <div class="alert alert-info" role="status">
+      {% trans "Este exame está em um estado final e não possui novas transições." %}
+    </div>
+  {% endif %}
+{% endblock %}

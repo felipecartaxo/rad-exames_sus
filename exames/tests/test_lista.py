@@ -64,7 +64,7 @@ class ExameListViewTests(TestCase):
         dados = {
             "tipo": "Hemograma",
             "data": self.data_base,
-            "status": Exame.Status.AGENDADO,
+            "status": Exame.Status.CONFIRMADO,
             "usuario": usuario,
             "unidade": self.unidade,
             "profissional": self.profissional,

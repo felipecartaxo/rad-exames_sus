@@ -12,8 +12,14 @@
           <a href="{% url 'exames:lista' %}">{% trans "Meus exames" %}</a>
           <a href="{% url 'exames:historico' %}">{% trans "Histórico" %}</a>
         {% endif %}
+        {% if request.user.tipo == "PROFISSIONAL" and perms.exames.view_exame %}
+          <a href="{% url 'exames:lista_profissional' %}">{% trans "Exames atribuídos" %}</a>
+        {% endif %}
         {% if request.user.tipo == "SERVIDOR" and perms.usuarios.view_usuario %}
           <a href="{% url 'usuarios_lista:lista' %}">{% trans "Usuários" %}</a>
+        {% endif %}
+        {% if request.user.tipo == "SERVIDOR" and perms.exames.add_agendamento and perms.exames.add_exame %}
+          <a href="{% url 'exames:criar' %}">{% trans "Novo exame" %}</a>
         {% endif %}
         {% if request.user.is_superuser %}
           <a href="{% url 'admin:index' %}">{% trans "Administração" %}</a>
