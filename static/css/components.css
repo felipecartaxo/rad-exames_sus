@@ -160,6 +160,9 @@ button[type="submit"]:hover {
 
 .language-switcher {
   position: relative;
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
   color: var(--color-primary-dark);
 }
 
@@ -167,6 +170,7 @@ button[type="submit"]:hover {
   display: inline-flex;
   align-items: center;
   cursor: pointer;
+  line-height: 0;
   list-style: none;
 }
 
@@ -327,6 +331,14 @@ button[type="submit"]:hover {
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
+}
+
+.page-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
 .record-list {
@@ -587,5 +599,9 @@ button[type="submit"]:hover {
   .danger-zone {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .page-actions {
+    justify-content: flex-start;
   }
 }

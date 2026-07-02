@@ -18,7 +18,12 @@
       <h1>{% trans "Usuários" %}</h1>
       <p>{% trans "Consulte os cidadãos, servidores e profissionais cadastrados no sistema." %}</p>
     </div>
-    <a class="button" href="{% url 'usuarios_lista:criar' %}">{% trans "Novo usuário" %}</a>
+    <div class="page-actions">
+      <a class="button" href="{% url 'usuarios_lista:criar' %}">{% trans "Novo usuário" %}</a>
+      {% if perms.exames.add_agendamento and perms.exames.add_exame %}
+        <a class="button" href="{% url 'exames:criar' %}">{% trans "Novo exame" %}</a>
+      {% endif %}
+    </div>
   </header>
 
   <section class="list-filters" aria-labelledby="titulo-filtros-usuarios">

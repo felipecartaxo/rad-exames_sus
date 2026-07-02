@@ -57,6 +57,7 @@ class UsuarioListViewTests(TestCase):
 
         self.assertEqual(resposta.status_code, 200)
         self.assertContains(resposta, self.cidadao.nome)
+        self.assertContains(resposta, reverse("usuarios_lista:lista"))
 
     def test_servidor_com_permissao_visualiza_lista(self):
         self.client.force_login(self.servidor)
@@ -65,6 +66,23 @@ class UsuarioListViewTests(TestCase):
 
         self.assertEqual(resposta.status_code, 200)
         self.assertContains(resposta, self.cidadao.nome)
+
+    def test_acoes_da_pagina_exibem_novo_usuario_e_novo_exame_autorizado(self):
+        self.servidor.user_permissions.add(
+            Permission.objects.get(codename="add_agendamento"),
+            Permission.objects.get(codename="add_exame"),
+        )
+        self.client.force_login(self.servidor)
+
+        resposta = self.client.get(self.url)
+
+        self.assertContains(resposta, 'class="page-actions"')
+        self.assertContains(resposta, reverse("usuarios_lista:criar"))
+        self.assertContains(resposta, reverse("exames:criar"))
+        self.assertNotContains(
+            resposta,
+            f'class="button button-secondary" href="{reverse("exames:criar")}"',
+        )
 
     def test_listagem_possui_cinco_registros_por_pagina(self):
         for indice in range(12):
