@@ -1046,10 +1046,10 @@ O projeto deve possuir suporte a `i18n`.
 
 ### Adoção progressiva aprovada
 
-- português do Brasil e inglês estão disponíveis para cidadãos e profissionais;
+- português do Brasil e inglês estão disponíveis para cidadãos, profissionais e servidores;
 - o seletor de idioma é exibido ao lado do sino de notificações;
-- o catálogo inglês cobre o layout compartilhado, a listagem do cidadão e a jornada de listagem, detalhes, atualização e exclusão do profissional;
-- o servidor recebe o seletor e seus textos traduzidos somente após a validação da entrega do profissional.
+- o catálogo inglês cobre o layout compartilhado e as jornadas principais de cidadãos, profissionais e servidores;
+- a tradução é adotada progressivamente em novos textos visíveis, mantendo os catálogos sincronizados.
 
 Não é necessário traduzir toda a aplicação para vários idiomas em uma única tarefa. A infraestrutura e a adoção progressiva devem ser implementadas e validadas conforme o escopo aprovado.
 

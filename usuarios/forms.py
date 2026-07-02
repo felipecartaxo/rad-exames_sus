@@ -102,6 +102,13 @@ class FiltroUsuarioForm(forms.Form):
 
 
 class EdicaoUsuarioServidorForm(forms.ModelForm):
+    cpf = forms.CharField(
+        label=_("CPF"),
+        max_length=14,
+        widget=forms.TextInput(
+            attrs={"autocomplete": "username", "inputmode": "numeric"}
+        ),
+    )
     password1 = forms.CharField(
         label=_("Nova senha"),
         required=False,
@@ -121,9 +128,6 @@ class EdicaoUsuarioServidorForm(forms.ModelForm):
         fields = ("nome", "cpf", "tipo")
         widgets = {
             "nome": forms.TextInput(attrs={"autocomplete": "name"}),
-            "cpf": forms.TextInput(
-                attrs={"autocomplete": "username", "inputmode": "numeric"}
-            ),
         }
 
     def __init__(self, *args, **kwargs):

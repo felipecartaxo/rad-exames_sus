@@ -224,3 +224,150 @@ msgstr "academic project for managing exams in the Brazilian public health syste
 
 msgid "Desenvolvido com Django."
 msgstr "Built with Django."
+
+msgid "Usuários"
+msgstr "Users"
+
+msgid "Novo exame"
+msgstr "New exam"
+
+msgid "Administração"
+msgstr "Administration"
+
+msgid "Notificações indisponíveis para este perfil"
+msgstr "Notifications unavailable for this profile"
+
+msgid "Consulte os cidadãos, servidores e profissionais cadastrados no sistema."
+msgstr "View citizens, staff members and healthcare professionals registered in the system."
+
+msgid "Novo usuário"
+msgstr "New user"
+
+msgid "Filtrar usuários"
+msgstr "Filter users"
+
+msgid "Com os perfis selecionados:"
+msgstr "For the selected profiles:"
+
+msgid "Inativar selecionados"
+msgstr "Deactivate selected"
+
+msgid "Reativar selecionados"
+msgstr "Reactivate selected"
+
+msgid "Usuários cadastrados"
+msgstr "Registered users"
+
+msgid "Selecionar %(nome)s"
+msgstr "Select %(nome)s"
+
+msgid "Ativo"
+msgstr "Active"
+
+msgid "Inativo"
+msgstr "Inactive"
+
+msgid "CPF"
+msgstr "CPF"
+
+msgid "Perfil"
+msgstr "Profile"
+
+msgid "Servidor"
+msgstr "Staff member"
+
+msgid "Profissional"
+msgstr "Healthcare professional"
+
+msgid "Editar usuário"
+msgstr "Edit user"
+
+msgid "Inativar perfil"
+msgstr "Deactivate profile"
+
+msgid "Reativar perfil"
+msgstr "Reactivate profile"
+
+msgid "Editar profissional"
+msgstr "Edit healthcare professional"
+
+msgid "Nenhum usuário encontrado"
+msgstr "No users found"
+
+msgid "Ainda não há usuários disponíveis para consulta."
+msgstr "There are no users available yet."
+
+msgid "Nome ou CPF"
+msgstr "Name or CPF"
+
+msgid "Digite um nome ou CPF"
+msgstr "Enter a name or CPF"
+
+msgid "Todos os perfis"
+msgstr "All profiles"
+
+msgid "Situação"
+msgstr "Status"
+
+msgid "Todas as situações"
+msgstr "All statuses"
+
+msgid "Cadastre um cidadão ou servidor para acessar o ExameSUS."
+msgstr "Register a citizen or staff member to access ExameSUS."
+
+msgid "Criar usuário"
+msgstr "Create user"
+
+msgid "nome"
+msgstr "name"
+
+msgid "Nova senha"
+msgstr "New password"
+
+msgid "Confirmação da nova senha"
+msgstr "New password confirmation"
+
+msgid "Deixe em branco para manter a senha atual."
+msgstr "Leave blank to keep the current password."
+
+msgid "Atualize os dados de %(nome)s."
+msgstr "Update %(nome)s's information."
+
+msgid "Salvar alterações"
+msgstr "Save changes"
+
+msgid "Editar profissional de saúde"
+msgstr "Edit healthcare professional"
+
+msgid "Atualize os dados profissionais e de acesso de %(nome)s."
+msgstr "Update %(nome)s's professional and access information."
+
+msgid "cargo"
+msgstr "role"
+
+msgid "especialidade"
+msgstr "specialty"
+
+msgid "Novo agendamento e exame"
+msgstr "New appointment and exam"
+
+msgid "Início"
+msgstr "Home"
+
+msgid "Criar agendamento e exame"
+msgstr "Create appointment and exam"
+
+msgid "Associe o cidadão ao local e ao profissional responsável pelo exame."
+msgstr "Assign the citizen, facility and healthcare professional responsible for the exam."
+
+msgid "Corrija os campos indicados abaixo."
+msgstr "Correct the fields indicated below."
+
+msgid "Tipo do exame"
+msgstr "Exam type"
+
+msgid "Data e horário do agendamento"
+msgstr "Appointment date and time"
+
+msgid "Data e horário do exame"
+msgstr "Exam date and time"

@@ -25,6 +25,11 @@ class InternacionalizacaoCidadaoTests(TestCase):
             tipo=Usuario.Tipo.SERVIDOR,
             password="senha-segura-123",
         )
+        cls.servidor.user_permissions.add(
+            *Permission.objects.filter(
+                codename__in=("add_agendamento", "add_exame")
+            )
+        )
         cls.unidade = UnidadeSaude.objects.create(
             nome="Unidade Central",
             endereco="Rua Central, 100",
@@ -99,12 +104,66 @@ class InternacionalizacaoCidadaoTests(TestCase):
         self.assertContains(resposta, '<html lang="pt-br">')
         self.assertContains(resposta, "Meus exames")
 
-    def test_servidor_ainda_nao_visualiza_controle_de_idioma(self):
+    def test_servidor_visualiza_controle_e_listagem_em_ingles(self):
         self.client.force_login(self.servidor)
+        url = reverse("usuarios_lista:lista")
 
-        resposta = self.client.get(reverse("usuarios_lista:lista"))
+        resposta = self.client.post(
+            reverse("set_language"),
+            {"language": "en", "next": url},
+            follow=True,
+        )
 
-        self.assertNotContains(resposta, 'class="language-switcher"')
+        self.assertContains(resposta, 'class="language-switcher"')
+        self.assertContains(resposta, "Users")
+        self.assertContains(resposta, "Filter users")
+        self.assertContains(resposta, "New user")
+        self.assertContains(resposta, "Deactivate selected")
+
+    def test_tela_de_criacao_de_usuario_e_traduzida(self):
+        self.client.force_login(self.servidor)
+        url = reverse("usuarios_lista:criar")
+
+        resposta = self.client.post(
+            reverse("set_language"),
+            {"language": "en", "next": url},
+            follow=True,
+        )
+
+        self.assertContains(resposta, "New user")
+        self.assertContains(resposta, "Create user")
+        self.assertContains(resposta, "Profile")
+
+    def test_tela_de_edicao_de_profissional_e_traduzida(self):
+        self.client.force_login(self.servidor)
+        url = reverse(
+            "usuarios_lista:editar_profissional",
+            args=[self.profissional.pk],
+        )
+
+        resposta = self.client.post(
+            reverse("set_language"),
+            {"language": "en", "next": url},
+            follow=True,
+        )
+
+        self.assertContains(resposta, "Edit healthcare professional")
+        self.assertContains(resposta, "Save changes")
+        self.assertContains(resposta, "Specialty")
+
+    def test_tela_de_criacao_de_exame_e_traduzida(self):
+        self.client.force_login(self.servidor)
+        url = reverse("exames:criar")
+
+        resposta = self.client.post(
+            reverse("set_language"),
+            {"language": "en", "next": url},
+            follow=True,
+        )
+
+        self.assertContains(resposta, "Create appointment and exam")
+        self.assertContains(resposta, "Exam type")
+        self.assertContains(resposta, "Appointment date and time")
 
     def test_profissional_visualiza_controle_e_listagem_em_ingles(self):
         self.client.force_login(self.profissional)
