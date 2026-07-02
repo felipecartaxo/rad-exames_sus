@@ -1010,6 +1010,19 @@ Por enquanto, está autorizado:
 - implementar um recurso ou endpoint por vez;
 - manter as mesmas regras de autorização e desativação das páginas HTML.
 
+### Primeira entrega aprovada
+
+- recurso: exames;
+- endpoints: `GET /api/v1/exames/` e `GET /api/v1/exames/<id>/`;
+- autenticação: sessão do Django;
+- cidadão consulta somente os próprios exames;
+- profissional consulta somente exames atribuídos a ele;
+- servidor consulta todos os exames;
+- paginação de cinco registros, ordenados por data e identificador decrescentes;
+- filtros opcionais por status, período e unidade de saúde;
+- anexos são representados exclusivamente pela URL protegida de download;
+- operações de escrita permanecem fora desta primeira entrega.
+
 ### Regras
 
 - não gerar CRUD completo automaticamente para todos os modelos;
@@ -1027,7 +1040,7 @@ Por enquanto, está autorizado:
 
 A escolha entre APIViews, generic views ou ViewSets deve considerar simplicidade, clareza e o escopo real. Evite abstração excessiva.
 
-**Pendências para a fase da API:** recursos expostos, métodos permitidos por perfil, forma de autenticação da API, versionamento e política detalhada de desativação. Antes de cada endpoint, apresente a proposta e aguarde validação.
+**Pendências para as próximas entregas da API:** operações de escrita e política detalhada de criação, atualização, exclusão e desativação. Antes de cada endpoint adicional, apresente a proposta e aguarde validação.
 
 ---
 

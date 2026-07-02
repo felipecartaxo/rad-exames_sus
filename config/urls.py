@@ -9,4 +9,5 @@ urlpatterns = [
     path("usuarios/", include("usuarios.urls_lista")),
     path("exames/", include("exames.urls")),
     path("notificacoes/", include("notificacoes.urls")),
+    path("api/v1/exames/", include("exames.api.urls")),
 ]
