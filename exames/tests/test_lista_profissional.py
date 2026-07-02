@@ -181,3 +181,7 @@ class ExameProfissionalListViewTests(TestCase):
         resposta = self.client.get(self.url)
 
         self.assertContains(resposta, "Exames atribuídos")
+        self.assertContains(
+            resposta,
+            f'href="{reverse("usuarios:inicio")}">Minha conta</a>',
+        )

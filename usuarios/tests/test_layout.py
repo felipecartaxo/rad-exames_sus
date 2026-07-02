@@ -44,6 +44,10 @@ class LayoutCompartilhadoTests(TestCase):
         resposta = self.client.get(reverse("usuarios:inicio"))
 
         self.assertContains(resposta, usuario.nome)
+        self.assertContains(
+            resposta,
+            f'href="{reverse("usuarios:inicio")}">Minha conta</a>',
+        )
         self.assertContains(resposta, "Nenhuma notificação pendente")
         self.assertContains(resposta, "Navegação estrutural")
 

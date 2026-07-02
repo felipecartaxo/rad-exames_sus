@@ -15,11 +15,15 @@
       {% if request.user.is_authenticated %}
         <div class="primary-navigation-links">
           {% if request.user.tipo == "CIDADAO" %}
+            <a href="{% url 'usuarios:inicio' %}">{% trans "Minha conta" %}</a>
             <a href="{% url 'exames:lista' %}">{% trans "Meus exames" %}</a>
             <a href="{% url 'exames:historico' %}">{% trans "Histórico" %}</a>
           {% endif %}
-          {% if request.user.tipo == "PROFISSIONAL" and perms.exames.view_exame %}
-            <a href="{% url 'exames:lista_profissional' %}">{% trans "Exames atribuídos" %}</a>
+          {% if request.user.tipo == "PROFISSIONAL" %}
+            <a href="{% url 'usuarios:inicio' %}">{% trans "Minha conta" %}</a>
+            {% if perms.exames.view_exame %}
+              <a href="{% url 'exames:lista_profissional' %}">{% trans "Exames atribuídos" %}</a>
+            {% endif %}
           {% endif %}
           {% if request.user.tipo == "SERVIDOR" %}
             <a href="{% url 'usuarios:inicio' %}">{% trans "Minha conta" %}</a>
