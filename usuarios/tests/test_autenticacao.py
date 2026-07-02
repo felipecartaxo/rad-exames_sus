@@ -88,10 +88,13 @@ class AutenticacaoTests(TestCase):
         self.assertContains(resposta, "CPF ou senha inválidos.")
         self.assertNotIn(SESSION_KEY, self.client.session)
 
-    def test_servidor_comum_e_direcionado_para_lista_de_usuarios(self):
+    def test_servidor_comum_e_direcionado_para_dashboard(self):
         resposta = self.fazer_login(cpf=self.servidor.cpf)
 
-        self.assertRedirects(resposta, reverse("usuarios_lista:lista"))
+        self.assertRedirects(
+            resposta,
+            reverse("usuarios:dashboard_servidor"),
+        )
 
     def test_superusuario_e_direcionado_para_admin(self):
         resposta = self.fazer_login(cpf=self.superusuario.cpf)

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Dashboard" %} | ExameSUS{% endblock %}
+
+{% block breadcrumb %}
+  <nav class="breadcrumb" aria-label="{% trans 'Navegação estrutural' %}">
+    <ol>
+      <li aria-current="page">{% trans "Dashboard" %}</li>
+    </ol>
+  </nav>
+{% endblock %}
+
+{% block content %}
+  <header class="page-header">
+    <h1>{% trans "Dashboard do servidor" %}</h1>
+    <p>{% trans "Acompanhe a situação dos cidadãos e profissionais de saúde cadastrados." %}</p>
+  </header>
+
+  <section class="dashboard-grid" aria-label="{% trans 'Resumo dos perfis cadastrados' %}">
+    <article class="stat-card">
+      <p class="stat-card-label">{% trans "Cidadãos ativos" %}</p>
+      <strong class="stat-card-value">{{ totais.cidadaos_ativos }}</strong>
+      <a href="{% url 'usuarios_lista:lista' %}?tipo=CIDADAO&amp;situacao=ativo">{% trans "Ver perfis" %}</a>
+    </article>
+    <article class="stat-card">
+      <p class="stat-card-label">{% trans "Cidadãos inativos" %}</p>
+      <strong class="stat-card-value">{{ totais.cidadaos_inativos }}</strong>
+      <a href="{% url 'usuarios_lista:lista' %}?tipo=CIDADAO&amp;situacao=inativo">{% trans "Ver perfis" %}</a>
+    </article>
+    <article class="stat-card">
+      <p class="stat-card-label">{% trans "Profissionais ativos" %}</p>
+      <strong class="stat-card-value">{{ totais.profissionais_ativos }}</strong>
+      <a href="{% url 'usuarios_lista:lista' %}?tipo=PROFISSIONAL&amp;situacao=ativo">{% trans "Ver perfis" %}</a>
+    </article>
+    <article class="stat-card">
+      <p class="stat-card-label">{% trans "Profissionais inativos" %}</p>
+      <strong class="stat-card-value">{{ totais.profissionais_inativos }}</strong>
+      <a href="{% url 'usuarios_lista:lista' %}?tipo=PROFISSIONAL&amp;situacao=inativo">{% trans "Ver perfis" %}</a>
+    </article>
+  </section>
+{% endblock %}

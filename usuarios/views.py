@@ -2,12 +2,13 @@ from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 from django.views import View
+from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 
@@ -56,7 +57,7 @@ class LoginCpfView(LoginView):
         if self.request.user.tipo == Usuario.Tipo.PROFISSIONAL:
             return reverse("exames:lista_profissional")
         if self.request.user.tipo == Usuario.Tipo.SERVIDOR:
-            return reverse("usuarios_lista:lista")
+            return reverse("usuarios:dashboard_servidor")
         return reverse("usuarios:inicio")
 
 
@@ -75,6 +76,33 @@ class ContaView(LoginRequiredMixin, FormView):
         update_session_auth_hash(self.request, usuario)
         messages.success(self.request, _("Seus dados foram atualizados."))
         return super().form_valid(form)
+
+
+class DashboardServidorView(ServidorMixin, TemplateView):
+    template_name = "usuarios/dashboard_servidor.html"
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        totais = Usuario.objects.aggregate(
+            cidadaos_ativos=Count(
+                "pk",
+                filter=Q(tipo=Usuario.Tipo.CIDADAO, is_active=True),
+            ),
+            cidadaos_inativos=Count(
+                "pk",
+                filter=Q(tipo=Usuario.Tipo.CIDADAO, is_active=False),
+            ),
+            profissionais_ativos=Count(
+                "pk",
+                filter=Q(tipo=Usuario.Tipo.PROFISSIONAL, is_active=True),
+            ),
+            profissionais_inativos=Count(
+                "pk",
+                filter=Q(tipo=Usuario.Tipo.PROFISSIONAL, is_active=False),
+            ),
+        )
+        contexto["totais"] = totais
+        return contexto
 
 
 class LogoutCpfView(LogoutView):

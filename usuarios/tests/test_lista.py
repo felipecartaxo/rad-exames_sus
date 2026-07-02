@@ -113,7 +113,7 @@ class UsuarioListViewTests(TestCase):
 
         self.assertEqual(usuarios, esperado)
 
-    def test_login_de_servidor_autorizado_redireciona_para_lista(self):
+    def test_login_de_servidor_autorizado_redireciona_para_dashboard(self):
         resposta = self.client.post(
             reverse("usuarios:login"),
             {
@@ -122,9 +122,12 @@ class UsuarioListViewTests(TestCase):
             },
         )
 
-        self.assertRedirects(resposta, self.url)
+        self.assertRedirects(
+            resposta,
+            reverse("usuarios:dashboard_servidor"),
+        )
 
-    def test_login_de_servidor_sem_permissao_redireciona_para_lista(self):
+    def test_login_de_servidor_sem_permissao_redireciona_para_dashboard(self):
         resposta = self.client.post(
             reverse("usuarios:login"),
             {
@@ -133,7 +136,10 @@ class UsuarioListViewTests(TestCase):
             },
         )
 
-        self.assertRedirects(resposta, self.url)
+        self.assertRedirects(
+            resposta,
+            reverse("usuarios:dashboard_servidor"),
+        )
 
     def test_filtra_por_nome_ou_cpf_formatado(self):
         outro = Usuario.objects.create_user(
@@ -298,6 +304,17 @@ class UsuarioListViewTests(TestCase):
         self.assertFalse(self.cidadao.is_active)
         self.assertFalse(profissional.is_active)
         self.assertTrue(self.servidor.is_active)
+
+    def test_acao_em_lote_de_inativar_usa_estilo_vermelho_preenchido(self):
+        self.client.force_login(self.servidor)
+
+        resposta = self.client.get(self.url)
+
+        self.assertContains(
+            resposta,
+            'class="button button-danger-filled" type="submit" '
+            'name="acao" value="inativar"',
+        )
 
     def test_alteracao_em_lote_reativa_perfis(self):
         self.cidadao.is_active = False

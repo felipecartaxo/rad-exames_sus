@@ -18,6 +18,7 @@
   --color-success: #168821;
   --color-success-soft: #e8f5e9;
   --color-danger: #e52207;
+  --color-danger-dark: #b51b05;
   --color-danger-soft: #fdecea;
   --color-warning: #ffcd07;
   --color-warning-soft: #fff7d6;
@@ -33,4 +34,3 @@
   --radius-md: 0.5rem;
   --container-width: 72rem;
 }
-

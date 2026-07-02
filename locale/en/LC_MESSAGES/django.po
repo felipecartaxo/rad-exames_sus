@@ -451,3 +451,33 @@ msgstr "The %(tipo)s exam was assigned to you. View its details to follow the se
 
 msgid "Notificações do usuário"
 msgstr "User notifications"
+
+msgid "Dashboard"
+msgstr "Dashboard"
+
+msgid "Dashboard do servidor"
+msgstr "Staff dashboard"
+
+msgid "Acompanhe a situação dos cidadãos e profissionais de saúde cadastrados."
+msgstr "Track the status of registered citizens and health professionals."
+
+msgid "Resumo dos perfis cadastrados"
+msgstr "Registered profiles summary"
+
+msgid "Cidadãos ativos"
+msgstr "Active citizens"
+
+msgid "Cidadãos inativos"
+msgstr "Inactive citizens"
+
+msgid "Profissionais ativos"
+msgstr "Active health professionals"
+
+msgid "Profissionais inativos"
+msgstr "Inactive health professionals"
+
+msgid "Ver perfis"
+msgstr "View profiles"
+
+msgid "Minha conta"
+msgstr "My account"

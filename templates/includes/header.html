@@ -21,6 +21,8 @@
           <a href="{% url 'exames:lista_profissional' %}">{% trans "Exames atribuídos" %}</a>
         {% endif %}
         {% if request.user.tipo == "SERVIDOR" %}
+          <a href="{% url 'usuarios:inicio' %}">{% trans "Minha conta" %}</a>
+          <a href="{% url 'usuarios:dashboard_servidor' %}">{% trans "Dashboard" %}</a>
           <a href="{% url 'usuarios_lista:lista' %}">{% trans "Usuários" %}</a>
         {% endif %}
         {% if request.user.tipo == "SERVIDOR" and perms.exames.add_agendamento and perms.exames.add_exame %}
