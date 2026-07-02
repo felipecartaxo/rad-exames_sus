@@ -18,6 +18,23 @@
     <p>{% trans "Exames organizados dos mais recentes para os mais antigos." %}</p>
   </header>
 
+  <section class="list-filters" aria-labelledby="titulo-filtros">
+    <h2 id="titulo-filtros">{% trans "Filtrar exames" %}</h2>
+    <form class="list-filters-form" method="get" novalidate>
+      {% for field in form_filtros.visible_fields %}
+        <div class="form-field">
+          {{ field.label_tag }}
+          {{ field }}
+          {% for error in field.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+      {% endfor %}
+      <div class="form-actions">
+        <button type="submit">{% trans "Aplicar filtros" %}</button>
+        <a class="button button-tertiary" href="{% url 'exames:lista' %}">{% trans "Limpar filtros" %}</a>
+      </div>
+    </form>
+  </section>
+
   <ul class="record-list" aria-label="{% trans 'Exames do cidadão' %}">
     {% for exame in exames %}
       <li class="record-card">
@@ -35,6 +52,9 @@
             <dd>{{ exame.unidade.nome }}</dd>
           </div>
         </dl>
+        {% if exame.documento_resultado %}
+          <a class="button button-secondary" href="{% url 'exames:documento_resultado' exame.pk %}">{% trans "Visualizar anexo do resultado" %}</a>
+        {% endif %}
       </li>
     {% empty %}
       <li class="empty-state">
@@ -46,4 +66,3 @@
 
   {% include "components/pagination.html" %}
 {% endblock %}
-

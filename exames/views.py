@@ -10,7 +10,11 @@ from django.views.generic.list import ListView
 
 from usuarios.permissions import ServidorAutorizadoMixin
 
-from .forms import CriacaoAgendamentoExameForm, TransicaoExameForm
+from .forms import (
+    CriacaoAgendamentoExameForm,
+    FiltroExameCidadaoForm,
+    TransicaoExameForm,
+)
 from .models import Exame
 from .permissions import CidadaoAutenticadoMixin, ProfissionalAutorizadoMixin
 from .services import TRANSICOES_STATUS, criar_agendamento_exame, transicionar_status
@@ -37,18 +41,38 @@ class ExameListView(CidadaoAutenticadoMixin, ListView):
     context_object_name = "exames"
     paginate_by = 5
 
+    def get_form_filtros(self):
+        if not hasattr(self, "form_filtros"):
+            self.form_filtros = FiltroExameCidadaoForm(
+                self.request.user,
+                self.request.GET or None,
+            )
+        return self.form_filtros
+
     def get_queryset(self):
-        return (
+        queryset = (
             Exame.objects.filter(usuario=self.request.user)
             .select_related("unidade")
-            .order_by("-data", "-pk")
         )
+        formulario = self.get_form_filtros()
+        if formulario.is_valid():
+            filtros = formulario.cleaned_data
+            if filtros["status"]:
+                queryset = queryset.filter(status=filtros["status"])
+            if filtros["data_inicio"]:
+                queryset = queryset.filter(data__gte=filtros["data_inicio"])
+            if filtros["data_fim"]:
+                queryset = queryset.filter(data__lte=filtros["data_fim"])
+            if filtros["unidade"]:
+                queryset = queryset.filter(unidade=filtros["unidade"])
+        return queryset.order_by("-data", "-pk")
 
     def get_context_data(self, **kwargs):
         contexto = super().get_context_data(**kwargs)
         parametros = self.request.GET.copy()
         parametros.pop("page", None)
         contexto["querystring"] = parametros.urlencode()
+        contexto["form_filtros"] = self.get_form_filtros()
         return contexto
 
 

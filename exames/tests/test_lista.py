@@ -1,7 +1,9 @@
+import tempfile
 from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -12,6 +14,7 @@ from rede_saude.models import Profissional, UnidadeSaude
 Usuario = get_user_model()
 
 
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
 class ExameListViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -66,7 +69,7 @@ class ExameListViewTests(TestCase):
             "data": self.data_base,
             "status": Exame.Status.CONFIRMADO,
             "usuario": usuario,
-            "unidade": self.unidade,
+            "unidade": agendamento.unidade,
             "profissional": self.profissional,
             "agendamento": agendamento,
         }
@@ -121,6 +124,28 @@ class ExameListViewTests(TestCase):
 
         self.assertContains(resposta, "Nenhum exame encontrado")
 
+    def test_lista_exibe_anexo_somente_quando_disponivel(self):
+        com_anexo = self.criar_exame(
+            tipo="Exame com anexo",
+            status=Exame.Status.RESULTADO_DISPONIVEL,
+            resultado="Resultado disponível.",
+            documento_resultado=SimpleUploadedFile(
+                "resultado.pdf",
+                b"%PDF-1.4 documento de teste",
+                content_type="application/pdf",
+            ),
+        )
+        self.criar_exame(tipo="Exame sem anexo")
+        self.client.force_login(self.cidadao)
+
+        resposta = self.client.get(self.url)
+
+        self.assertContains(resposta, "Visualizar anexo do resultado", count=1)
+        self.assertContains(
+            resposta,
+            reverse("exames:documento_resultado", args=[com_anexo.pk]),
+        )
+
     def test_ordenacao_usa_data_e_id_decrescentes(self):
         antigo = self.criar_exame(
             tipo="Antigo",
@@ -138,6 +163,111 @@ class ExameListViewTests(TestCase):
             resposta.context["exames"],
             [recente, antigo],
         )
+
+    def test_filtra_exames_por_status(self):
+        self.criar_exame(tipo="Confirmado")
+        em_analise = self.criar_exame(
+            tipo="Em análise",
+            status=Exame.Status.EM_ANALISE,
+        )
+        self.client.force_login(self.cidadao)
+
+        resposta = self.client.get(
+            self.url,
+            {"status": Exame.Status.EM_ANALISE},
+        )
+
+        self.assertQuerySetEqual(resposta.context["exames"], [em_analise])
+
+    def test_filtra_por_faixa_inclusiva_de_data_e_horario(self):
+        anterior = self.criar_exame(
+            tipo="Anterior",
+            data=self.data_base - timedelta(hours=2),
+        )
+        inicio = self.criar_exame(
+            tipo="No início",
+            data=self.data_base,
+        )
+        fim = self.criar_exame(
+            tipo="No fim",
+            data=self.data_base + timedelta(hours=1),
+        )
+        posterior = self.criar_exame(
+            tipo="Posterior",
+            data=self.data_base + timedelta(hours=2),
+        )
+        self.client.force_login(self.cidadao)
+
+        resposta = self.client.get(
+            self.url,
+            {
+                "data_inicio": self.data_base.strftime("%Y-%m-%dT%H:%M"),
+                "data_fim": (self.data_base + timedelta(hours=1)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
+            },
+        )
+
+        self.assertQuerySetEqual(resposta.context["exames"], [fim, inicio])
+        self.assertNotContains(resposta, anterior.tipo)
+        self.assertNotContains(resposta, posterior.tipo)
+
+    def test_filtra_por_unidade_sem_expor_unidade_de_terceiro(self):
+        outra_unidade = UnidadeSaude.objects.create(
+            nome="Unidade Norte",
+            endereco="Avenida Norte, 200",
+            ativo=False,
+        )
+        unidade_terceiro = UnidadeSaude.objects.create(
+            nome="Unidade exclusiva de terceiro",
+            endereco="Rua Privada, 30",
+        )
+        agendamento_norte = Agendamento.objects.create(
+            usuario=self.cidadao,
+            unidade=outra_unidade,
+            data=self.data_base,
+        )
+        agendamento_terceiro = Agendamento.objects.create(
+            usuario=self.outro_cidadao,
+            unidade=unidade_terceiro,
+            data=self.data_base,
+        )
+        central = self.criar_exame(tipo="Exame central")
+        norte = self.criar_exame(
+            tipo="Exame norte",
+            agendamento=agendamento_norte,
+        )
+        self.criar_exame(
+            tipo="Exame de terceiro",
+            usuario=self.outro_cidadao,
+            agendamento=agendamento_terceiro,
+        )
+        self.client.force_login(self.cidadao)
+
+        resposta = self.client.get(self.url, {"unidade": outra_unidade.pk})
+
+        self.assertQuerySetEqual(resposta.context["exames"], [norte])
+        self.assertNotContains(resposta, central.tipo)
+        unidades = resposta.context["form_filtros"].fields["unidade"].queryset
+        self.assertIn(outra_unidade, unidades)
+        self.assertNotIn(unidade_terceiro, unidades)
+
+    def test_faixa_invalida_exibe_erro_e_nao_filtra(self):
+        exame = self.criar_exame()
+        self.client.force_login(self.cidadao)
+
+        resposta = self.client.get(
+            self.url,
+            {
+                "data_inicio": self.data_base.strftime("%Y-%m-%dT%H:%M"),
+                "data_fim": (self.data_base - timedelta(hours=1)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
+            },
+        )
+
+        self.assertContains(resposta, "A data final deve ser")
+        self.assertQuerySetEqual(resposta.context["exames"], [exame])
 
     def test_lista_possui_cinco_exames_por_pagina(self):
         for indice in range(12):

@@ -200,6 +200,45 @@ button[type="submit"]:hover {
   flex-wrap: wrap;
 }
 
+.list-filters {
+  width: 100%;
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-background-secondary);
+}
+
+.list-filters h2 {
+  margin-bottom: var(--space-3);
+  font-size: 1.125rem;
+}
+
+.list-filters-form {
+  display: flex;
+  min-width: max-content;
+  align-items: end;
+  gap: var(--space-3);
+}
+
+.list-filters .form-field {
+  flex: 1 0 11rem;
+  margin: 0;
+}
+
+.list-filters .form-field:nth-child(2),
+.list-filters .form-field:nth-child(3) {
+  flex-basis: 13rem;
+}
+
+.list-filters .form-actions {
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  padding-bottom: 1px;
+  white-space: nowrap;
+}
+
 .page-header {
   margin-bottom: var(--space-4);
 }

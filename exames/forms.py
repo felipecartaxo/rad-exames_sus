@@ -111,3 +111,52 @@ class TransicaoExameForm(forms.Form):
                 _("Resultado e documento só podem ser enviados ao disponibilizar o resultado.")
             )
         return dados
+
+
+class FiltroExameCidadaoForm(forms.Form):
+    status = forms.ChoiceField(
+        label=_("Status do exame"),
+        required=False,
+        choices=(("", _("Todos os status")), *Exame.Status.choices),
+    )
+    data_inicio = forms.DateTimeField(
+        label=_("Data e horário inicial"),
+        required=False,
+        input_formats=("%Y-%m-%dT%H:%M",),
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local"},
+            format="%Y-%m-%dT%H:%M",
+        ),
+    )
+    data_fim = forms.DateTimeField(
+        label=_("Data e horário final"),
+        required=False,
+        input_formats=("%Y-%m-%dT%H:%M",),
+        widget=forms.DateTimeInput(
+            attrs={"type": "datetime-local"},
+            format="%Y-%m-%dT%H:%M",
+        ),
+    )
+    unidade = forms.ModelChoiceField(
+        label=_("Unidade de saúde"),
+        required=False,
+        empty_label=_("Todas as unidades"),
+        queryset=UnidadeSaude.objects.none(),
+    )
+
+    def __init__(self, usuario, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["unidade"].queryset = UnidadeSaude.objects.filter(
+            exames__usuario=usuario
+        ).distinct().order_by("nome", "pk")
+
+    def clean(self):
+        dados = super().clean()
+        inicio = dados.get("data_inicio")
+        fim = dados.get("data_fim")
+        if inicio and fim and fim < inicio:
+            self.add_error(
+                "data_fim",
+                _("A data final deve ser igual ou posterior à data inicial."),
+            )
+        return dados
