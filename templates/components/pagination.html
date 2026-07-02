@@ -4,22 +4,33 @@
     <p class="pagination-summary">
       {% blocktrans with atual=page_obj.number total=page_obj.paginator.num_pages %}Página {{ atual }} de {{ total }}{% endblocktrans %}
     </p>
-    <ul>
+    <ul class="pagination-pages">
       <li>
         {% if page_obj.has_previous %}
-          <a href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" rel="prev">{% trans "Página anterior" %}</a>
+          <a class="pagination-control" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" rel="prev" aria-label="{% trans 'Página anterior' %}">&lsaquo;</a>
         {% else %}
-          <span aria-disabled="true">{% trans "Página anterior" %}</span>
+          <span class="pagination-control" aria-disabled="true" aria-label="{% trans 'Página anterior' %}">&lsaquo;</span>
         {% endif %}
       </li>
+      {% for numero in page_obj.paginator.page_range %}
+        <li>
+          {% if numero == page_obj.number %}
+            <span class="pagination-page pagination-page-current" aria-current="page">
+              <span class="visually-hidden">{% trans "Página atual:" %}</span>
+              {{ numero }}
+            </span>
+          {% else %}
+            <a class="pagination-page" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ numero }}" aria-label="{% blocktrans %}Ir para a página {{ numero }}{% endblocktrans %}">{{ numero }}</a>
+          {% endif %}
+        </li>
+      {% endfor %}
       <li>
         {% if page_obj.has_next %}
-          <a href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}" rel="next">{% trans "Próxima página" %}</a>
+          <a class="pagination-control" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}" rel="next" aria-label="{% trans 'Próxima página' %}">&rsaquo;</a>
         {% else %}
-          <span aria-disabled="true">{% trans "Próxima página" %}</span>
+          <span class="pagination-control" aria-disabled="true" aria-label="{% trans 'Próxima página' %}">&rsaquo;</span>
         {% endif %}
       </li>
     </ul>
   </nav>
 {% endif %}
-
