@@ -371,3 +371,30 @@ msgstr "Appointment date and time"
 
 msgid "Data e horário do exame"
 msgstr "Exam date and time"
+
+msgid "Entrar"
+msgstr "Sign in"
+
+msgid "Criar conta"
+msgstr "Create account"
+
+msgid "Entre no ExameSUS"
+msgstr "Sign in to ExameSUS"
+
+msgid "Use seu CPF e sua senha para acessar o sistema."
+msgstr "Use your CPF and password to access the system."
+
+msgid "Não foi possível entrar"
+msgstr "Unable to sign in"
+
+msgid "CPF ou senha inválidos."
+msgstr "Invalid CPF or password."
+
+msgid "Senha"
+msgstr "Password"
+
+msgid "Ainda não possui uma conta?"
+msgstr "Do not have an account yet?"
+
+msgid "Cadastre-se"
+msgstr "Create one"

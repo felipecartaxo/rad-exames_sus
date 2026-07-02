@@ -70,6 +70,27 @@ class InternacionalizacaoCidadaoTests(TestCase):
         self.assertContains(resposta, 'class="language-switcher"')
         self.assertContains(resposta, "Alterar idioma")
 
+    def test_visitante_alterna_login_para_ingles(self):
+        url = reverse("usuarios:login")
+
+        resposta = self.client.post(
+            reverse("set_language"),
+            {"language": "en", "next": url},
+            follow=True,
+        )
+
+        self.assertContains(resposta, 'class="language-switcher"')
+        self.assertContains(resposta, "Sign in to ExameSUS")
+        self.assertContains(resposta, "Invalid CPF or password.", count=0)
+        self.assertContains(resposta, "Do not have an account yet?")
+        self.assertContains(resposta, "Create one")
+
+    def test_cabecalho_usa_simbolo_de_saude_em_svg(self):
+        resposta = self.client.get(reverse("usuarios:login"))
+
+        self.assertContains(resposta, 'class="brand-mark"')
+        self.assertContains(resposta, 'viewBox="0 0 32 32"')
+
     def test_alternancia_para_ingles_traduz_listagem_de_exames(self):
         self.client.force_login(self.cidadao)
         url = reverse("exames:lista")

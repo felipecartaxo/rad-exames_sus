@@ -39,7 +39,10 @@ body {
   border-radius: 50%;
   background: var(--color-primary);
   color: var(--color-text-on-dark);
-  font-size: 1.5rem;
+}
+
+.brand-mark svg {
+  display: block;
 }
 
 .primary-navigation,
@@ -98,4 +101,3 @@ body {
     order: -1;
   }
 }
-
