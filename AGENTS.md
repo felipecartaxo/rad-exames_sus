@@ -81,6 +81,7 @@ As seguintes decisões estão aprovadas e não devem voltar a ser tratadas como 
 - `Exame.data` armazena data e horário;
 - cidadãos autenticados são direcionados para `/exames/`; profissionais são direcionados para sua lista de exames; todos os servidores são direcionados para `/usuarios/`; e superusuários são direcionados para o Django Admin;
 - qualquer usuário com perfil `SERVIDOR` pode criar e editar cidadãos e servidores pela área `/usuarios/`, sem permissões Django adicionais; também pode editar profissionais e inativar ou reativar cidadãos e profissionais, individualmente ou em lote, mas não alterar superusuários;
+- todo usuário autenticado pode atualizar o próprio nome, CPF e senha em `/conta/`; perfil, situação e permissões não são editáveis nessa página;
 - unidades e profissionais devem ser desativados, e não excluídos fisicamente; profissionais utilizam `Usuario.is_active` como fonte única de ativação;
 - usuários são desativados por meio do campo `is_active`; cidadãos e profissionais podem ser inativados e reativados por servidores na área `/usuarios/`, individualmente ou em lote;
 - profissionais podem excluir permanentemente apenas exames atribuídos a eles; a exclusão remove de forma transacional as notificações, o exame e seu agendamento, e remove o PDF vinculado após a confirmação da transação;

@@ -405,6 +405,21 @@ msgstr "Caring for health and valuing every citizen's life."
 msgid "Desenvolvedores"
 msgstr "Developers"
 
+msgid "Olá, %(nome)s"
+msgstr "Hello, %(nome)s"
+
+msgid "Sua autenticação foi realizada com sucesso."
+msgstr "You are signed in successfully."
+
+msgid "Consulte e mantenha seus dados de acesso atualizados."
+msgstr "Review and keep your access information up to date."
+
+msgid "Meus dados"
+msgstr "My information"
+
+msgid "Seus dados foram atualizados."
+msgstr "Your information has been updated."
+
 msgid "Histórico de exames"
 msgstr "Exam history"
 

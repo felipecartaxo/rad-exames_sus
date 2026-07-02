@@ -103,6 +103,22 @@ class CriacaoAgendamentoExameViewTests(TestCase):
             f"{reverse('usuarios:login')}?next={self.url}",
         )
 
+    def test_formulario_usa_card_com_largura_total(self):
+        self.client.force_login(self.servidor)
+
+        resposta = self.client.get(self.url)
+
+        self.assertContains(
+            resposta,
+            'class="content-card content-card-wide"',
+        )
+        self.assertContains(
+            resposta,
+            'class="form-actions form-actions-centered"',
+        )
+        self.assertContains(resposta, reverse("usuarios_lista:lista"))
+        self.assertContains(resposta, "Cancelar")
+
     def test_acesso_exige_servidor_com_as_duas_permissoes(self):
         for usuario in (
             self.cidadao,

@@ -167,6 +167,65 @@ class EdicaoUsuarioServidorForm(forms.ModelForm):
         return usuario
 
 
+class EdicaoProprioPerfilForm(forms.ModelForm):
+    cpf = forms.CharField(
+        label=_("CPF"),
+        max_length=14,
+        widget=forms.TextInput(
+            attrs={"autocomplete": "username", "inputmode": "numeric"}
+        ),
+    )
+    password1 = forms.CharField(
+        label=_("Nova senha"),
+        required=False,
+        strip=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
+        help_text=_("Deixe em branco para manter a senha atual."),
+    )
+    password2 = forms.CharField(
+        label=_("Confirmação da nova senha"),
+        required=False,
+        strip=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
+    )
+
+    class Meta:
+        model = Usuario
+        fields = ("nome", "cpf")
+        widgets = {
+            "nome": forms.TextInput(attrs={"autocomplete": "name"}),
+        }
+
+    def clean_cpf(self):
+        cpf = normalizar_cpf(self.cleaned_data["cpf"])
+        validar_cpf(cpf)
+        if Usuario.objects.exclude(pk=self.instance.pk).filter(cpf=cpf).exists():
+            raise forms.ValidationError(
+                _("Já existe uma conta cadastrada com este CPF."),
+                code="cpf_duplicado",
+            )
+        return cpf
+
+    def clean(self):
+        dados = super().clean()
+        senha = dados.get("password1")
+        confirmacao = dados.get("password2")
+        if senha != confirmacao:
+            self.add_error("password2", _("As senhas não coincidem."))
+        if senha:
+            validate_password(senha, self.instance)
+        return dados
+
+    def save(self, commit=True):
+        usuario = super().save(commit=False)
+        senha = self.cleaned_data.get("password1")
+        if senha:
+            usuario.set_password(senha)
+        if commit:
+            usuario.save()
+        return usuario
+
+
 class LoginCpfForm(AuthenticationForm):
     username = forms.CharField(
         label=_("CPF"),

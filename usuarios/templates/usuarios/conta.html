@@ -12,9 +12,41 @@
 {% endblock %}
 
 {% block content %}
-  <section class="content-card" aria-labelledby="titulo-conta">
+  <section class="content-card content-card-wide account-card" aria-labelledby="titulo-conta">
     <h1 id="titulo-conta">{% blocktrans with nome=request.user.nome %}Olá, {{ nome }}{% endblocktrans %}</h1>
     <p>{% trans "Sua autenticação foi realizada com sucesso." %}</p>
-    <p>{% trans "As funcionalidades do seu perfil serão disponibilizadas nas próximas entregas." %}</p>
+    <p>{% trans "Consulte e mantenha seus dados de acesso atualizados." %}</p>
+  </section>
+
+  <section class="content-card content-card-wide account-card" aria-labelledby="titulo-dados-pessoais">
+    <h2 id="titulo-dados-pessoais">{% trans "Meus dados" %}</h2>
+    <dl class="record-details account-readonly-data">
+      <div><dt>{% trans "Perfil" %}</dt><dd>{{ request.user.get_tipo_display }}</dd></div>
+      <div>
+        <dt>{% trans "Situação" %}</dt>
+        <dd>{% if request.user.is_active %}{% trans "Ativo" %}{% else %}{% trans "Inativo" %}{% endif %}</dd>
+      </div>
+    </dl>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="error-summary" role="alert">
+          <h3>{% trans "Revise os dados informados" %}</h3>
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+      {% for field in form.visible_fields %}
+        <div class="form-field">
+          {{ field.label_tag }}
+          {{ field }}
+          {% if field.help_text %}<div class="help-text">{{ field.help_text|safe }}</div>{% endif %}
+          {% for error in field.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+      {% endfor %}
+      <div class="form-actions form-actions-centered">
+        <button type="submit">{% trans "Salvar alterações" %}</button>
+      </div>
+    </form>
   </section>
 {% endblock %}

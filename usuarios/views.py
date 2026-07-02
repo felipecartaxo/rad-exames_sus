@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.db.models import Q
@@ -7,7 +8,6 @@ from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 from django.views import View
-from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 
@@ -18,6 +18,7 @@ from .forms import (
     CadastroCidadaoForm,
     CriacaoUsuarioServidorForm,
     EdicaoUsuarioServidorForm,
+    EdicaoProprioPerfilForm,
     FiltroUsuarioForm,
     LoginCpfForm,
 )
@@ -59,8 +60,21 @@ class LoginCpfView(LoginView):
         return reverse("usuarios:inicio")
 
 
-class ContaView(LoginRequiredMixin, TemplateView):
+class ContaView(LoginRequiredMixin, FormView):
     template_name = "usuarios/conta.html"
+    form_class = EdicaoProprioPerfilForm
+    success_url = reverse_lazy("usuarios:inicio")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["instance"] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        usuario = form.save()
+        update_session_auth_hash(self.request, usuario)
+        messages.success(self.request, _("Seus dados foram atualizados."))
+        return super().form_valid(form)
 
 
 class LogoutCpfView(LogoutView):

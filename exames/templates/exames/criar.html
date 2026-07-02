@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block content %}
-  <section class="content-card" aria-labelledby="titulo-criacao">
+  <section class="content-card content-card-wide" aria-labelledby="titulo-criacao">
     <h1 id="titulo-criacao">{% trans "Criar agendamento e exame" %}</h1>
     <p>{% trans "Associe o cidadão ao local e ao profissional responsável pelo exame." %}</p>
 
@@ -36,8 +36,9 @@
       {% endfor %}
       {% for error in form.non_field_errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
 
-      <div class="form-actions">
+      <div class="form-actions form-actions-centered">
         <button type="submit">{% trans "Criar agendamento e exame" %}</button>
+        <a class="button button-secondary" href="{% url 'usuarios_lista:lista' %}">{% trans "Cancelar" %}</a>
       </div>
     </form>
   </section>

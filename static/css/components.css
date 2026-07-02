@@ -67,6 +67,20 @@ button[type="submit"]:hover {
   margin-inline: auto;
 }
 
+.content-card-wide {
+  width: 100%;
+}
+
+.account-card + .account-card {
+  margin-top: var(--space-4);
+}
+
+.account-readonly-data {
+  margin-block: var(--space-3) var(--space-5);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
 .login-actions {
   justify-content: center;
 }
@@ -285,6 +299,10 @@ button[type="submit"]:hover {
   align-items: center;
   gap: var(--space-3);
   flex-wrap: wrap;
+}
+
+.form-actions-centered {
+  justify-content: center;
 }
 
 .list-filters {
