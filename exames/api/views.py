@@ -1,15 +1,19 @@
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
 
 from exames.models import Exame
 from usuarios.models import Usuario
 
 from .pagination import ExamePageNumberPagination
-from .serializers import ExameSerializer, FiltroExameApiSerializer
+from .permissions import ExameApiPermission
+from .serializers import (
+    CriacaoExameApiSerializer,
+    ExameSerializer,
+    FiltroExameApiSerializer,
+)
 
 
 class ExameQuerysetMixin:
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (ExameApiPermission,)
     serializer_class = ExameSerializer
 
     def get_queryset(self):
@@ -28,8 +32,13 @@ class ExameQuerysetMixin:
         return queryset.order_by("-data", "-pk")
 
 
-class ExameListApiView(ExameQuerysetMixin, generics.ListAPIView):
+class ExameListApiView(ExameQuerysetMixin, generics.ListCreateAPIView):
     pagination_class = ExamePageNumberPagination
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return CriacaoExameApiSerializer
+        return ExameSerializer
 
     def filter_queryset(self, queryset):
         filtros = FiltroExameApiSerializer(data=self.request.query_params)

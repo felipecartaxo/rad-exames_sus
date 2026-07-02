@@ -34,6 +34,27 @@ Aplica as mesmas regras de isolamento da listagem. Um exame fora do escopo do us
 
 Quando houver anexo, `documento_resultado_url` aponta para a rota protegida de download. O caminho físico do arquivo não é exposto.
 
+### Criar agendamento e exame
+
+`POST /api/v1/exames/`
+
+Disponível somente para servidor com as permissões `exames.add_agendamento` e `exames.add_exame`. A operação cria agendamento e exame na mesma transação, sempre com status inicial `CONFIRMADO`.
+
+Corpo JSON:
+
+```json
+{
+  "usuario": 1,
+  "unidade": 1,
+  "profissional": 2,
+  "tipo": "Hemograma",
+  "data_agendamento": "2026-10-09T14:00:00-03:00",
+  "data_exame": "2026-10-10T14:00:00-03:00"
+}
+```
+
+Somente cidadãos, unidades e profissionais ativos são aceitos. A data do exame deve ser posterior à data do agendamento.
+
 ## Escopo atual
 
-Os endpoints são somente leitura. Criação, atualização e exclusão via API serão avaliadas incrementalmente.
+Listagem, detalhe e criação estão disponíveis. Atualização e exclusão via API serão avaliadas incrementalmente.

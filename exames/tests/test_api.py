@@ -1,6 +1,7 @@
 import tempfile
 from datetime import datetime, timedelta
 
+from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -32,6 +33,17 @@ class ExameApiTests(TestCase):
             nome="Servidor",
             tipo=Usuario.Tipo.SERVIDOR,
             password="senha-segura-123",
+        )
+        cls.servidor_autorizado = Usuario.objects.create_user(
+            cpf="16899535009",
+            nome="Servidor autorizado",
+            tipo=Usuario.Tipo.SERVIDOR,
+            password="senha-segura-123",
+        )
+        cls.servidor_autorizado.user_permissions.add(
+            *Permission.objects.filter(
+                codename__in=("add_agendamento", "add_exame")
+            )
         )
         cls.unidade = UnidadeSaude.objects.create(
             nome="Unidade Central",
@@ -238,3 +250,80 @@ class ExameApiTests(TestCase):
             )
         )
         self.assertNotIn("media_privada", item["documento_resultado_url"])
+
+    def dados_criacao(self, **alteracoes):
+        dados = {
+            "usuario": self.cidadao.pk,
+            "unidade": self.unidade.pk,
+            "profissional": self.profissional.pk,
+            "tipo": "Hemograma",
+            "data_agendamento": (
+                self.data_base - timedelta(days=1)
+            ).isoformat(),
+            "data_exame": self.data_base.isoformat(),
+        }
+        dados.update(alteracoes)
+        return dados
+
+    def test_servidor_autorizado_cria_agendamento_e_exame(self):
+        self.client.force_login(self.servidor_autorizado)
+
+        resposta = self.client.post(
+            self.url,
+            self.dados_criacao(),
+            content_type="application/json",
+        )
+
+        self.assertEqual(resposta.status_code, 201)
+        exame = Exame.objects.get(pk=resposta.json()["id"])
+        self.assertEqual(exame.status, Exame.Status.CONFIRMADO)
+        self.assertEqual(exame.usuario, self.cidadao)
+        self.assertEqual(exame.profissional, self.profissional)
+        self.assertEqual(exame.agendamento.usuario, self.cidadao)
+        self.assertEqual(exame.agendamento.unidade, self.unidade)
+
+    def test_criacao_exige_servidor_com_as_duas_permissoes(self):
+        for usuario in (self.cidadao, self.profissional, self.servidor):
+            with self.subTest(usuario=usuario.nome):
+                self.client.force_login(usuario)
+                resposta = self.client.post(
+                    self.url,
+                    self.dados_criacao(),
+                    content_type="application/json",
+                )
+                self.assertEqual(resposta.status_code, 403)
+
+    def test_criacao_rejeita_registros_inativos(self):
+        self.cidadao.is_active = False
+        self.cidadao.save(update_fields=["is_active"])
+        self.client.force_login(self.servidor_autorizado)
+
+        resposta = self.client.post(
+            self.url,
+            self.dados_criacao(),
+            content_type="application/json",
+        )
+
+        self.assertEqual(resposta.status_code, 400)
+        self.assertIn("usuario", resposta.json())
+
+    def test_criacao_rejeita_datas_invalidas_sem_persistir(self):
+        self.client.force_login(self.servidor_autorizado)
+        quantidade_exames = Exame.objects.count()
+        quantidade_agendamentos = Agendamento.objects.count()
+
+        resposta = self.client.post(
+            self.url,
+            self.dados_criacao(
+                data_exame=(self.data_base - timedelta(days=2)).isoformat()
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(resposta.status_code, 400)
+        self.assertIn("data_exame", resposta.json())
+        self.assertEqual(Exame.objects.count(), quantidade_exames)
+        self.assertEqual(
+            Agendamento.objects.count(),
+            quantidade_agendamentos,
+        )

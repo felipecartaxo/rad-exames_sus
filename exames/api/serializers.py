@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.reverse import reverse
 
 from exames.models import Exame
+from exames.services import criar_agendamento_exame
 from rede_saude.models import Profissional, UnidadeSaude
 from usuarios.models import Usuario
 
@@ -78,3 +79,39 @@ class FiltroExameApiSerializer(serializers.Serializer):
                 {"data_fim": "A data final deve ser posterior à data inicial."}
             )
         return attrs
+
+
+class CriacaoExameApiSerializer(serializers.Serializer):
+    usuario = serializers.PrimaryKeyRelatedField(
+        queryset=Usuario.objects.filter(
+            tipo=Usuario.Tipo.CIDADAO,
+            is_active=True,
+        )
+    )
+    unidade = serializers.PrimaryKeyRelatedField(
+        queryset=UnidadeSaude.objects.filter(ativo=True)
+    )
+    profissional = serializers.PrimaryKeyRelatedField(
+        queryset=Profissional.objects.filter(is_active=True)
+    )
+    tipo = serializers.CharField(max_length=150)
+    data_agendamento = serializers.DateTimeField()
+    data_exame = serializers.DateTimeField()
+
+    def validate(self, attrs):
+        if attrs["data_exame"] <= attrs["data_agendamento"]:
+            raise serializers.ValidationError(
+                {
+                    "data_exame": (
+                        "A data do exame deve ser posterior à data "
+                        "do agendamento."
+                    )
+                }
+            )
+        return attrs
+
+    def create(self, validated_data):
+        return criar_agendamento_exame(**validated_data)
+
+    def to_representation(self, instance):
+        return ExameSerializer(instance, context=self.context).data

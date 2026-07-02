@@ -1021,7 +1021,15 @@ Por enquanto, está autorizado:
 - paginação de cinco registros, ordenados por data e identificador decrescentes;
 - filtros opcionais por status, período e unidade de saúde;
 - anexos são representados exclusivamente pela URL protegida de download;
-- operações de escrita permanecem fora desta primeira entrega.
+
+### Segunda entrega aprovada
+
+- endpoint: `POST /api/v1/exames/`;
+- somente servidor com `exames.add_agendamento` e `exames.add_exame` pode criar;
+- a criação de agendamento e exame é transacional e reutiliza o serviço do fluxo HTML;
+- cidadão, unidade e profissional devem estar ativos;
+- a data do exame deve ser posterior à data do agendamento;
+- o status inicial é obrigatoriamente `CONFIRMADO`.
 
 ### Regras
 
