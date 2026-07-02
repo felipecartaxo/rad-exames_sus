@@ -62,7 +62,9 @@ class ExameApiTests(TestCase):
             unidade=cls.unidade,
         )
         cls.profissional.user_permissions.add(
-            Permission.objects.get(codename="change_exame")
+            *Permission.objects.filter(
+                codename__in=("change_exame", "view_exame")
+            )
         )
         cls.outro_profissional = Profissional.objects.create(
             cpf="39053344705",
@@ -71,7 +73,9 @@ class ExameApiTests(TestCase):
             unidade=cls.outra_unidade,
         )
         cls.outro_profissional.user_permissions.add(
-            Permission.objects.get(codename="change_exame")
+            *Permission.objects.filter(
+                codename__in=("change_exame", "view_exame")
+            )
         )
         cls.data_base = timezone.make_aware(
             datetime(2026, 10, 10, 14, 0)
@@ -456,3 +460,55 @@ class ExameApiTests(TestCase):
         )
 
         self.assertEqual(resposta.status_code, 405)
+
+    def test_profissional_responsavel_exclui_exame_integralmente(self):
+        exame = self.criar_exame(
+            status=Exame.Status.RESULTADO_DISPONIVEL,
+            resultado="Resultado do exame",
+            documento_resultado=SimpleUploadedFile(
+                "resultado.pdf",
+                b"%PDF-1.4 documento de teste",
+                content_type="application/pdf",
+            ),
+        )
+        agendamento_id = exame.agendamento_id
+        nome_documento = exame.documento_resultado.name
+        armazenamento = exame.documento_resultado.storage
+        Notificacao.objects.create(
+            usuario=self.cidadao,
+            exame=exame,
+            mensagem="Resultado disponivel.",
+        )
+        self.client.force_login(self.profissional)
+
+        with self.captureOnCommitCallbacks(execute=True):
+            resposta = self.client.delete(
+                reverse("api_exames:detalhe", args=[exame.pk])
+            )
+
+        self.assertEqual(resposta.status_code, 204)
+        self.assertFalse(Exame.objects.filter(pk=exame.pk).exists())
+        self.assertFalse(
+            Agendamento.objects.filter(pk=agendamento_id).exists()
+        )
+        self.assertFalse(Notificacao.objects.filter(exame_id=exame.pk).exists())
+        self.assertFalse(armazenamento.exists(nome_documento))
+
+    def test_delete_exige_profissional_responsavel_com_permissao(self):
+        exame = self.criar_exame()
+        url = reverse("api_exames:detalhe", args=[exame.pk])
+
+        for usuario in (self.cidadao, self.servidor):
+            with self.subTest(usuario=usuario.nome):
+                self.client.force_login(usuario)
+                self.assertEqual(self.client.delete(url).status_code, 403)
+
+        self.client.force_login(self.outro_profissional)
+        self.assertEqual(self.client.delete(url).status_code, 404)
+
+        self.profissional.user_permissions.remove(
+            Permission.objects.get(codename="view_exame")
+        )
+        self.client.force_login(self.profissional)
+        self.assertEqual(self.client.delete(url).status_code, 403)
+        self.assertTrue(Exame.objects.filter(pk=exame.pk).exists())

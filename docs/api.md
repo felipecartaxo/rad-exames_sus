@@ -80,6 +80,14 @@ Para disponibilizar um resultado:
 
 O resultado é obrigatório nessa transição. Um PDF opcional de até 10 MB pode ser enviado usando `multipart/form-data` no campo `documento_resultado`.
 
+### Excluir exame
+
+`DELETE /api/v1/exames/<id>/`
+
+Disponível somente para o profissional responsável com acesso ao exame. A resposta de sucesso é `204 No Content`.
+
+A exclusão é integral: remove notificações, exame e agendamento na mesma transação. O PDF é removido após a confirmação da transação. Exames atribuídos a outros profissionais não são revelados e retornam `404`.
+
 ## Escopo atual
 
-Listagem, detalhe, criação e atualização do fluxo profissional estão disponíveis. Exclusão via API será avaliada incrementalmente.
+Listagem, detalhe, criação, atualização e exclusão de exames estão disponíveis conforme as permissões documentadas.

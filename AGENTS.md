@@ -1041,13 +1041,22 @@ Por enquanto, está autorizado:
 - atualização de resultado, status, documento e notificação reutiliza o serviço transacional do fluxo HTML;
 - `PUT` não é permitido e campos estruturais do exame não são editáveis.
 
+### Quarta entrega aprovada
+
+- endpoint: `DELETE /api/v1/exames/<id>/`;
+- somente o profissional responsável com `exames.view_exame` pode excluir;
+- a exclusão integral reutiliza o serviço transacional do fluxo HTML;
+- notificações, exame e agendamento são removidos na mesma transação;
+- o PDF é removido somente após a confirmação da transação;
+- sucesso retorna `204 No Content` e exames de terceiros retornam `404`.
+
 ### Regras
 
 - não gerar CRUD completo automaticamente para todos os modelos;
 - não tornar endpoints públicos por padrão;
 - não expor senha, hashes, permissões internas ou dados além do necessário;
 - filtrar querysets para impedir acesso a dados de terceiros;
-- não permitir exclusão física por `DELETE`;
+- não permitir exclusão física por `DELETE`, exceto para exames quando explicitamente autorizado e restrito ao profissional responsável;
 - quando uma operação de remoção administrativa for aprovada, ela deve representar desativação;
 - use serializers para validação e representação;
 - utilize códigos HTTP adequados;

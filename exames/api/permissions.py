@@ -18,6 +18,11 @@ class ExameApiPermission(BasePermission):
                 request.user.tipo == Usuario.Tipo.PROFISSIONAL
                 and request.user.has_perm("exames.change_exame")
             )
+        if request.method == "DELETE":
+            return (
+                request.user.tipo == Usuario.Tipo.PROFISSIONAL
+                and request.user.has_perm("exames.view_exame")
+            )
         return (
             request.method == "POST"
             and request.user.tipo == Usuario.Tipo.SERVIDOR

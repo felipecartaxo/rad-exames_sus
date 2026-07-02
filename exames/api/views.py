@@ -1,6 +1,7 @@
 from rest_framework import generics
 
 from exames.models import Exame
+from exames.services import excluir_exame_atribuido
 from usuarios.models import Usuario
 
 from .pagination import ExamePageNumberPagination
@@ -56,10 +57,16 @@ class ExameListApiView(ExameQuerysetMixin, generics.ListCreateAPIView):
         return queryset
 
 
-class ExameDetailApiView(ExameQuerysetMixin, generics.RetrieveUpdateAPIView):
-    http_method_names = ("get", "patch", "head", "options")
+class ExameDetailApiView(
+    ExameQuerysetMixin,
+    generics.RetrieveUpdateDestroyAPIView,
+):
+    http_method_names = ("get", "patch", "delete", "head", "options")
 
     def get_serializer_class(self):
         if self.request.method == "PATCH":
             return AtualizacaoExameApiSerializer
         return ExameSerializer
+
+    def perform_destroy(self, instance):
+        excluir_exame_atribuido(instance)
