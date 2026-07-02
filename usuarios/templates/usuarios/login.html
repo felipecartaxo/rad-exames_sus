@@ -27,12 +27,12 @@
         </div>
       {% endfor %}
 
-      <div class="form-actions">
+      <div class="form-actions login-actions">
         <button type="submit">{% trans "Entrar" %}</button>
       </div>
     </form>
 
-    <p>
+    <p class="login-signup">
       {% trans "Ainda não possui uma conta?" %}
       <a href="{% url 'usuarios:cadastro' %}">{% trans "Cadastre-se" %}</a>
     </p>

@@ -43,6 +43,12 @@ class AutenticacaoTests(TestCase):
         self.assertContains(resposta, "CPF")
         self.assertContains(resposta, 'type="password"')
 
+    def test_acoes_do_login_possuem_alinhamento_e_espacamento_proprios(self):
+        resposta = self.client.get(self.login_url)
+
+        self.assertContains(resposta, 'class="form-actions login-actions"')
+        self.assertContains(resposta, 'class="login-signup"')
+
     def test_login_valido_cria_sessao(self):
         resposta = self.fazer_login()
 
@@ -82,10 +88,10 @@ class AutenticacaoTests(TestCase):
         self.assertContains(resposta, "CPF ou senha inválidos.")
         self.assertNotIn(SESSION_KEY, self.client.session)
 
-    def test_servidor_comum_e_direcionado_para_conta_temporaria(self):
+    def test_servidor_comum_e_direcionado_para_lista_de_usuarios(self):
         resposta = self.fazer_login(cpf=self.servidor.cpf)
 
-        self.assertRedirects(resposta, self.inicio_url)
+        self.assertRedirects(resposta, reverse("usuarios_lista:lista"))
 
     def test_superusuario_e_direcionado_para_admin(self):
         resposta = self.fazer_login(cpf=self.superusuario.cpf)
