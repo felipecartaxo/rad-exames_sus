@@ -17,7 +17,7 @@ body {
   display: flex;
   min-height: 4.5rem;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--space-3);
 }
 
@@ -46,6 +46,8 @@ body {
 }
 
 .primary-navigation,
+.primary-navigation-links,
+.session-actions,
 .user-summary {
   display: flex;
   align-items: center;
@@ -53,8 +55,18 @@ body {
 }
 
 .primary-navigation {
-  justify-content: flex-end;
+  flex: 1;
+  justify-content: space-between;
   flex-wrap: wrap;
+}
+
+.primary-navigation-links,
+.session-actions {
+  flex-wrap: wrap;
+}
+
+.session-actions {
+  margin-left: auto;
 }
 
 .primary-navigation form {
@@ -130,6 +142,8 @@ body {
 @media (max-width: 40rem) {
   .header-inner,
   .primary-navigation,
+  .primary-navigation-links,
+  .session-actions,
   .footer-inner {
     align-items: flex-start;
     flex-direction: column;
@@ -147,6 +161,12 @@ body {
   .primary-navigation {
     width: 100%;
     gap: var(--space-2);
+  }
+
+  .primary-navigation-links,
+  .session-actions {
+    width: 100%;
+    margin-left: 0;
   }
 
   .user-summary {

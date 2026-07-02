@@ -95,7 +95,8 @@ class DashboardServidorTests(TestCase):
     def test_navegacao_do_servidor_respeita_ordem_definida(self):
         self.client.force_login(self.servidor)
 
-        conteudo = self.client.get(self.url).content.decode()
+        resposta = self.client.get(self.url)
+        conteudo = resposta.content.decode()
         itens = (
             f'href="{reverse("usuarios:inicio")}">Minha conta',
             f'href="{self.url}">Dashboard',
@@ -105,3 +106,5 @@ class DashboardServidorTests(TestCase):
 
         posicoes = [conteudo.index(item) for item in itens]
         self.assertEqual(posicoes, sorted(posicoes))
+        self.assertContains(resposta, 'class="primary-navigation-links"')
+        self.assertContains(resposta, 'class="session-actions"')

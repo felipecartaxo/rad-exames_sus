@@ -13,37 +13,43 @@
 
     <nav class="primary-navigation" aria-label="{% trans 'Navegação principal' %}">
       {% if request.user.is_authenticated %}
-        {% if request.user.tipo == "CIDADAO" %}
-          <a href="{% url 'exames:lista' %}">{% trans "Meus exames" %}</a>
-          <a href="{% url 'exames:historico' %}">{% trans "Histórico" %}</a>
-        {% endif %}
-        {% if request.user.tipo == "PROFISSIONAL" and perms.exames.view_exame %}
-          <a href="{% url 'exames:lista_profissional' %}">{% trans "Exames atribuídos" %}</a>
-        {% endif %}
-        {% if request.user.tipo == "SERVIDOR" %}
-          <a href="{% url 'usuarios:inicio' %}">{% trans "Minha conta" %}</a>
-          <a href="{% url 'usuarios:dashboard_servidor' %}">{% trans "Dashboard" %}</a>
-          <a href="{% url 'usuarios_lista:lista' %}">{% trans "Usuários" %}</a>
-        {% endif %}
-        {% if request.user.tipo == "SERVIDOR" and perms.exames.add_agendamento and perms.exames.add_exame %}
-          <a href="{% url 'exames:criar' %}">{% trans "Novo exame" %}</a>
-        {% endif %}
-        {% if request.user.is_superuser %}
-          <a href="{% url 'admin:index' %}">{% trans "Administração" %}</a>
-        {% endif %}
-        <div class="user-summary">
-          {% include "includes/notification_bell.html" %}
-          {% include "includes/language_switcher.html" %}
-          <span class="user-name">{{ request.user.nome }}</span>
+        <div class="primary-navigation-links">
+          {% if request.user.tipo == "CIDADAO" %}
+            <a href="{% url 'exames:lista' %}">{% trans "Meus exames" %}</a>
+            <a href="{% url 'exames:historico' %}">{% trans "Histórico" %}</a>
+          {% endif %}
+          {% if request.user.tipo == "PROFISSIONAL" and perms.exames.view_exame %}
+            <a href="{% url 'exames:lista_profissional' %}">{% trans "Exames atribuídos" %}</a>
+          {% endif %}
+          {% if request.user.tipo == "SERVIDOR" %}
+            <a href="{% url 'usuarios:inicio' %}">{% trans "Minha conta" %}</a>
+            <a href="{% url 'usuarios:dashboard_servidor' %}">{% trans "Dashboard" %}</a>
+            <a href="{% url 'usuarios_lista:lista' %}">{% trans "Usuários" %}</a>
+          {% endif %}
+          {% if request.user.tipo == "SERVIDOR" and perms.exames.add_agendamento and perms.exames.add_exame %}
+            <a href="{% url 'exames:criar' %}">{% trans "Novo exame" %}</a>
+          {% endif %}
+          {% if request.user.is_superuser %}
+            <a href="{% url 'admin:index' %}">{% trans "Administração" %}</a>
+          {% endif %}
         </div>
-        <form method="post" action="{% url 'usuarios:logout' %}">
-          {% csrf_token %}
-          <button class="button button-tertiary" type="submit">{% trans "Sair" %}</button>
-        </form>
+        <div class="session-actions">
+          <div class="user-summary">
+            {% include "includes/notification_bell.html" %}
+            {% include "includes/language_switcher.html" %}
+            <span class="user-name">{{ request.user.nome }}</span>
+          </div>
+          <form method="post" action="{% url 'usuarios:logout' %}">
+            {% csrf_token %}
+            <button class="button button-tertiary" type="submit">{% trans "Sair" %}</button>
+          </form>
+        </div>
       {% else %}
-        {% include "includes/language_switcher.html" %}
-        <a href="{% url 'usuarios:login' %}">{% trans "Entrar" %}</a>
-        <a class="button button-secondary" href="{% url 'usuarios:cadastro' %}">{% trans "Criar conta" %}</a>
+        <div class="session-actions">
+          {% include "includes/language_switcher.html" %}
+          <a href="{% url 'usuarios:login' %}">{% trans "Entrar" %}</a>
+          <a class="button button-secondary" href="{% url 'usuarios:cadastro' %}">{% trans "Criar conta" %}</a>
+        </div>
       {% endif %}
     </nav>
   </div>
