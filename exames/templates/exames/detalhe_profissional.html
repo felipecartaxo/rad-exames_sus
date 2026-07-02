@@ -18,7 +18,7 @@
     {% include "components/status_badge.html" with status=exame.status label=exame.get_status_display %}
   </header>
 
-  <section class="content-card" aria-labelledby="dados-exame">
+  <section class="record-card exam-detail-card" aria-labelledby="dados-exame">
     <h2 id="dados-exame">{% trans "Dados do exame" %}</h2>
     <dl class="record-details">
       <div><dt>{% trans "Cidadão" %}</dt><dd>{{ exame.usuario.nome }}</dd></div>
@@ -38,7 +38,7 @@
   </section>
 
   {% if possui_transicoes %}
-    <section class="content-card" aria-labelledby="atualizar-exame">
+    <section class="record-card exam-detail-card" aria-labelledby="atualizar-exame">
       <h2 id="atualizar-exame">{% trans "Atualizar estado do exame" %}</h2>
       {% if form.errors %}
         <div class="error-summary" role="alert" tabindex="-1">

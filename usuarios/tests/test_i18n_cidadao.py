@@ -1,6 +1,12 @@
+from datetime import datetime, timedelta
+
+from django.contrib.auth.models import Permission
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
+from exames.models import Agendamento, Exame
+from rede_saude.models import Profissional, UnidadeSaude
 from usuarios.models import Usuario
 
 
@@ -18,6 +24,36 @@ class InternacionalizacaoCidadaoTests(TestCase):
             nome="Servidor",
             tipo=Usuario.Tipo.SERVIDOR,
             password="senha-segura-123",
+        )
+        cls.unidade = UnidadeSaude.objects.create(
+            nome="Unidade Central",
+            endereco="Rua Central, 100",
+        )
+        cls.profissional = Profissional.objects.create(
+            cpf="93541134780",
+            nome="Profissional",
+            cargo="Médica",
+            unidade=cls.unidade,
+        )
+        cls.profissional.user_permissions.add(
+            *Permission.objects.filter(
+                codename__in=("view_exame", "change_exame")
+            )
+        )
+        data = timezone.make_aware(datetime(2026, 10, 10, 14, 0))
+        agendamento = Agendamento.objects.create(
+            usuario=cls.cidadao,
+            unidade=cls.unidade,
+            data=data - timedelta(days=1),
+        )
+        cls.exame = Exame.objects.create(
+            tipo="Hemograma",
+            data=data,
+            status=Exame.Status.CONFIRMADO,
+            usuario=cls.cidadao,
+            unidade=cls.unidade,
+            profissional=cls.profissional,
+            agendamento=agendamento,
         )
 
     def test_cidadao_visualiza_controle_de_idioma_ao_lado_do_sino(self):
@@ -43,7 +79,7 @@ class InternacionalizacaoCidadaoTests(TestCase):
         self.assertContains(resposta, "My exams")
         self.assertContains(resposta, "Filter exams")
         self.assertContains(resposta, "Apply filters")
-        self.assertContains(resposta, "No exams found")
+        self.assertContains(resposta, "Confirmed")
         self.assertContains(resposta, "Sign out")
 
     def test_cidadao_pode_retornar_ao_portugues(self):
@@ -69,3 +105,35 @@ class InternacionalizacaoCidadaoTests(TestCase):
         resposta = self.client.get(reverse("usuarios_lista:lista"))
 
         self.assertNotContains(resposta, 'class="language-switcher"')
+
+    def test_profissional_visualiza_controle_e_listagem_em_ingles(self):
+        self.client.force_login(self.profissional)
+        url = reverse("exames:lista_profissional")
+
+        resposta = self.client.post(
+            reverse("set_language"),
+            {"language": "en", "next": url},
+            follow=True,
+        )
+
+        self.assertContains(resposta, 'class="language-switcher"')
+        self.assertContains(resposta, "Assigned exams")
+        self.assertContains(resposta, "View details")
+        self.assertContains(resposta, "Delete exam")
+
+    def test_detalhes_do_profissional_sao_traduzidos_para_ingles(self):
+        self.client.force_login(self.profissional)
+        url = reverse(
+            "exames:detalhe_profissional",
+            args=[self.exame.pk],
+        )
+
+        resposta = self.client.post(
+            reverse("set_language"),
+            {"language": "en", "next": url},
+            follow=True,
+        )
+
+        self.assertContains(resposta, "Exam details")
+        self.assertContains(resposta, "Update exam status")
+        self.assertContains(resposta, "Next status")

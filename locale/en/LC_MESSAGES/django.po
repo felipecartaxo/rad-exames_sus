@@ -131,3 +131,96 @@ msgstr "Warning:"
 
 msgid "Informação:"
 msgstr "Information:"
+
+msgid "Exames atribuídos"
+msgstr "Assigned exams"
+
+msgid "Exames sob sua responsabilidade, dos mais recentes para os mais antigos."
+msgstr "Exams under your responsibility, ordered from newest to oldest."
+
+msgid "Exames atribuídos ao profissional"
+msgstr "Exams assigned to the healthcare professional"
+
+msgid "Cidadão"
+msgstr "Citizen"
+
+msgid "Ver detalhes"
+msgstr "View details"
+
+msgid "Excluir exame"
+msgstr "Delete exam"
+
+msgid "Nenhum exame atribuído"
+msgstr "No assigned exams"
+
+msgid "Não há exames sob sua responsabilidade."
+msgstr "There are no exams under your responsibility."
+
+msgid "Dados do exame"
+msgstr "Exam details"
+
+msgid "Data do agendamento"
+msgstr "Appointment date"
+
+msgid "Data do exame"
+msgstr "Exam date"
+
+msgid "Profissional responsável"
+msgstr "Responsible healthcare professional"
+
+msgid "Resultado"
+msgstr "Result"
+
+msgid "Baixar documento do resultado"
+msgstr "Download result document"
+
+msgid "Atualizar estado do exame"
+msgstr "Update exam status"
+
+msgid "Revise os dados informados"
+msgstr "Review the provided information"
+
+msgid "Atualizar exame"
+msgstr "Update exam"
+
+msgid "Este exame está em um estado final e não possui novas transições."
+msgstr "This exam is in a final status and has no further transitions."
+
+msgid "Próximo estado"
+msgstr "Next status"
+
+msgid "Documento do resultado (PDF)"
+msgstr "Result document (PDF)"
+
+msgid "Arquivo PDF opcional de até 10 MB."
+msgstr "Optional PDF file up to 10 MB."
+
+msgid "Confirmar exclusão"
+msgstr "Confirm deletion"
+
+msgid "Excluir exame permanentemente?"
+msgstr "Permanently delete exam?"
+
+msgid "Esta ação não pode ser desfeita. O exame, seu resultado, PDF, notificações e agendamento serão apagados."
+msgstr "This action cannot be undone. The exam, its result, PDF, notifications and appointment will be deleted."
+
+msgid "Exame"
+msgstr "Exam"
+
+msgid "Data"
+msgstr "Date"
+
+msgid "Sim, excluir permanentemente"
+msgstr "Yes, permanently delete"
+
+msgid "Cancelar"
+msgstr "Cancel"
+
+msgid "Ir para o conteúdo principal"
+msgstr "Skip to main content"
+
+msgid "projeto acadêmico para gestão de exames no SUS."
+msgstr "academic project for managing exams in the Brazilian public health system."
+
+msgid "Desenvolvido com Django."
+msgstr "Built with Django."

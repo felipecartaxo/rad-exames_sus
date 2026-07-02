@@ -469,6 +469,15 @@ button[type="submit"]:hover {
   border-top: 1px solid var(--color-border);
 }
 
+.exam-detail-card {
+  width: 100%;
+  margin-bottom: var(--space-4);
+}
+
+.exam-detail-card > h2 {
+  margin-bottom: var(--space-3);
+}
+
 .exam-result h3 {
   margin-bottom: var(--space-2);
   font-size: 1rem;

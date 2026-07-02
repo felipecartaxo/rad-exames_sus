@@ -26,7 +26,7 @@
         {% endif %}
         <div class="user-summary">
           {% include "includes/notification_bell.html" %}
-          {% if request.user.tipo == "CIDADAO" %}
+          {% if request.user.tipo == "CIDADAO" or request.user.tipo == "PROFISSIONAL" %}
             {% include "includes/language_switcher.html" %}
           {% endif %}
           <span class="user-name">{{ request.user.nome }}</span>
