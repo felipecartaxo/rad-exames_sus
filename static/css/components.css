@@ -26,13 +26,15 @@ button[type="submit"]:hover {
   color: var(--color-primary);
 }
 
-.button-danger {
+.button-danger,
+button[type="submit"].button-danger {
   border-color: var(--color-danger);
   background: var(--color-background);
   color: var(--color-danger);
 }
 
-.button-danger:hover {
+.button-danger:hover,
+button[type="submit"].button-danger:hover {
   border-color: var(--color-danger);
   background: var(--color-danger);
   color: var(--color-text-on-dark);
