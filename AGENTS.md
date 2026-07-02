@@ -80,9 +80,10 @@ As seguintes decisões estão aprovadas e não devem voltar a ser tratadas como 
 - `Agendamento.data` armazena data e horário;
 - `Exame.data` armazena data e horário;
 - cidadãos autenticados são direcionados para `/exames/`; profissionais são direcionados para sua lista de exames; todos os servidores são direcionados para `/usuarios/`; e superusuários são direcionados para o Django Admin;
-- qualquer usuário com perfil `SERVIDOR` pode criar e editar cidadãos e servidores pela área `/usuarios/`, sem permissões Django adicionais; também pode editar e inativar profissionais por essa área, mas não alterar superusuários;
+- qualquer usuário com perfil `SERVIDOR` pode criar e editar cidadãos e servidores pela área `/usuarios/`, sem permissões Django adicionais; também pode editar profissionais e inativar ou reativar cidadãos e profissionais, individualmente ou em lote, mas não alterar superusuários;
 - unidades e profissionais devem ser desativados, e não excluídos fisicamente; profissionais utilizam `Usuario.is_active` como fonte única de ativação;
-- usuários são desativados por meio do campo `is_active`; cidadãos e profissionais também podem ser inativados por servidores na área `/usuarios/`;
+- usuários são desativados por meio do campo `is_active`; cidadãos e profissionais podem ser inativados e reativados por servidores na área `/usuarios/`, individualmente ou em lote;
+- profissionais podem excluir permanentemente apenas exames atribuídos a eles; a exclusão remove de forma transacional as notificações, o exame e seu agendamento, e remove o PDF vinculado após a confirmação da transação;
 - a API REST deve usar Django REST Framework, com detalhamento incremental posterior.
 
 ---
@@ -946,6 +947,7 @@ O servidor autorizado deve mediar o atendimento criando o agendamento e o exame 
 - disponibilizar o anexo somente por download protegido ao cidadão proprietário e ao profissional responsável;
 - impedir alteração de cidadão, unidade, profissional, tipo e datas;
 - exigir perfil `PROFISSIONAL`, permissão Django aplicável e vínculo do exame ao profissional autenticado.
+- permitir a exclusão física somente pelo profissional responsável, mediante confirmação explícita, removendo também notificações, PDF e agendamento vinculados.
 
 #### Notificações e navegação
 

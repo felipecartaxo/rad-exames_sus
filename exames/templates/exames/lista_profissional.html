@@ -39,7 +39,10 @@
             <dd>{{ exame.unidade.nome }}</dd>
           </div>
         </dl>
-        <a class="button button-secondary" href="{% url 'exames:detalhe_profissional' exame.pk %}">{% trans "Ver detalhes" %}</a>
+        <div class="record-card-actions">
+          <a class="button button-secondary" href="{% url 'exames:detalhe_profissional' exame.pk %}">{% trans "Ver detalhes" %}</a>
+          <a class="button button-danger" href="{% url 'exames:excluir_profissional' exame.pk %}">{% trans "Excluir exame" %}</a>
+        </div>
       </li>
     {% empty %}
       <li class="empty-state">

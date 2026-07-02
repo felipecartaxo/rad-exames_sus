@@ -3,6 +3,7 @@ from django.urls import path
 from .views import (
     CriacaoAgendamentoExameView,
     ExameProfissionalDetailView,
+    ExameProfissionalDeleteView,
     ExameHistoricoView,
     ExameListView,
     ExameProfissionalListView,
@@ -24,6 +25,11 @@ urlpatterns = [
         "profissional/<int:pk>/",
         ExameProfissionalDetailView.as_view(),
         name="detalhe_profissional",
+    ),
+    path(
+        "profissional/<int:pk>/excluir/",
+        ExameProfissionalDeleteView.as_view(),
+        name="excluir_profissional",
     ),
     path(
         "<int:pk>/documento/",

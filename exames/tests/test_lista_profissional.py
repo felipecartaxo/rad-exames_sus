@@ -119,6 +119,21 @@ class ExameProfissionalListViewTests(TestCase):
         self.assertContains(resposta, self.cidadao.nome)
         self.assertContains(resposta, self.unidade.nome)
 
+    def test_lista_exibe_acoes_de_detalhe_e_exclusao(self):
+        exame = self.criar_exame()
+        self.client.force_login(self.profissional)
+
+        resposta = self.client.get(self.url)
+
+        self.assertContains(
+            resposta,
+            reverse("exames:detalhe_profissional", args=[exame.pk]),
+        )
+        self.assertContains(
+            resposta,
+            reverse("exames:excluir_profissional", args=[exame.pk]),
+        )
+
     def test_lista_exibe_estado_vazio(self):
         self.client.force_login(self.profissional)
 

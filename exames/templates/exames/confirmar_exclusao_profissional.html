@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Confirmar exclusão" %} | ExameSUS{% endblock %}
+
+{% block breadcrumb %}
+  <nav class="breadcrumb" aria-label="{% trans 'Navegação estrutural' %}">
+    <ol>
+      <li><a href="{% url 'exames:lista_profissional' %}">{% trans "Exames atribuídos" %}</a></li>
+      <li><a href="{% url 'exames:detalhe_profissional' exame.pk %}">{{ exame.tipo }}</a></li>
+      <li aria-current="page">{% trans "Confirmar exclusão" %}</li>
+    </ol>
+  </nav>
+{% endblock %}
+
+{% block content %}
+  <section class="content-card" aria-labelledby="titulo-confirmacao-exclusao">
+    <h1 id="titulo-confirmacao-exclusao">{% trans "Excluir exame permanentemente?" %}</h1>
+    <div class="alert alert-error" role="alert">
+      <p>{% trans "Esta ação não pode ser desfeita. O exame, seu resultado, PDF, notificações e agendamento serão apagados." %}</p>
+    </div>
+    <dl class="record-details">
+      <div><dt>{% trans "Exame" %}</dt><dd>{{ exame.tipo }}</dd></div>
+      <div><dt>{% trans "Cidadão" %}</dt><dd>{{ exame.usuario.nome }}</dd></div>
+      <div><dt>{% trans "Data" %}</dt><dd>{{ exame.data|date:"SHORT_DATETIME_FORMAT" }}</dd></div>
+    </dl>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-actions record-card-actions">
+        <button class="button button-danger" type="submit">{% trans "Sim, excluir permanentemente" %}</button>
+        <a class="button button-tertiary" href="{% url 'exames:detalhe_profissional' exame.pk %}">{% trans "Cancelar" %}</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

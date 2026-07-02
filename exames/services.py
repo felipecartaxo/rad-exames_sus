@@ -114,3 +114,22 @@ def transicionar_status(
                 )
             )
     return exame_bloqueado
+
+
+@transaction.atomic
+def excluir_exame_atribuido(exame):
+    from notificacoes.models import Notificacao
+
+    exame_bloqueado = Exame.objects.select_for_update().select_related(
+        "agendamento"
+    ).get(pk=exame.pk)
+    agendamento = exame_bloqueado.agendamento
+    nome_documento = exame_bloqueado.documento_resultado.name
+    armazenamento = exame_bloqueado.documento_resultado.storage
+
+    Notificacao.objects.filter(exame=exame_bloqueado).delete()
+    exame_bloqueado.delete()
+    agendamento.delete()
+
+    if nome_documento:
+        transaction.on_commit(lambda: armazenamento.delete(nome_documento))

@@ -2,9 +2,10 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import FileResponse, Http404
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
+from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 
@@ -17,7 +18,12 @@ from .forms import (
 )
 from .models import Exame
 from .permissions import CidadaoAutenticadoMixin, ProfissionalAutorizadoMixin
-from .services import TRANSICOES_STATUS, criar_agendamento_exame, transicionar_status
+from .services import (
+    TRANSICOES_STATUS,
+    criar_agendamento_exame,
+    excluir_exame_atribuido,
+    transicionar_status,
+)
 
 
 class CriacaoAgendamentoExameView(ServidorAutorizadoMixin, FormView):
@@ -160,6 +166,44 @@ class ExameProfissionalDetailView(ProfissionalAutorizadoMixin, FormView):
             "exames:detalhe_profissional",
             kwargs={"pk": self.kwargs["pk"]},
         )
+
+
+class ExameProfissionalDeleteView(
+    ProfissionalAutorizadoMixin,
+    TemplateView,
+):
+    template_name = "exames/confirmar_exclusao_profissional.html"
+    permission_required = "exames.view_exame"
+
+    def get_exame(self):
+        if not hasattr(self, "exame"):
+            self.exame = get_object_or_404(
+                Exame.objects.select_related(
+                    "usuario",
+                    "unidade",
+                    "profissional",
+                    "agendamento",
+                ),
+                pk=self.kwargs["pk"],
+                profissional_id=self.request.user.pk,
+            )
+        return self.exame
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        contexto["exame"] = self.get_exame()
+        return contexto
+
+    def post(self, request, *args, **kwargs):
+        exame = self.get_exame()
+        tipo = exame.tipo
+        excluir_exame_atribuido(exame)
+        messages.success(
+            request,
+            _("O exame %(tipo)s e seus dados vinculados foram excluídos.")
+            % {"tipo": tipo},
+        )
+        return redirect("exames:lista_profissional")
 
 
 @login_required(login_url="usuarios:login")

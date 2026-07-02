@@ -239,6 +239,73 @@ class UsuarioListViewTests(TestCase):
         self.cidadao.refresh_from_db()
         self.assertTrue(self.cidadao.is_active)
 
+    def test_servidor_reativa_cidadao(self):
+        self.cidadao.is_active = False
+        self.cidadao.save(update_fields=["is_active"])
+        self.client.force_login(self.servidor_sem_permissao)
+
+        resposta = self.client.post(
+            reverse("usuarios_lista:reativar", args=[self.cidadao.pk])
+        )
+
+        self.assertRedirects(resposta, self.url)
+        self.cidadao.refresh_from_db()
+        self.assertTrue(self.cidadao.is_active)
+
+    def test_alteracao_em_lote_inativa_apenas_perfis_permitidos(self):
+        profissional = Usuario.objects.create_user(
+            cpf="93541134780",
+            nome="Profissional",
+            tipo=Usuario.Tipo.PROFISSIONAL,
+            password="senha-segura-123",
+        )
+        self.client.force_login(self.servidor_sem_permissao)
+
+        resposta = self.client.post(
+            reverse("usuarios_lista:alterar_situacao"),
+            {
+                "acao": "inativar",
+                "usuarios": [
+                    self.cidadao.pk,
+                    profissional.pk,
+                    self.servidor.pk,
+                ],
+            },
+        )
+
+        self.assertRedirects(resposta, self.url)
+        self.cidadao.refresh_from_db()
+        profissional.refresh_from_db()
+        self.servidor.refresh_from_db()
+        self.assertFalse(self.cidadao.is_active)
+        self.assertFalse(profissional.is_active)
+        self.assertTrue(self.servidor.is_active)
+
+    def test_alteracao_em_lote_reativa_perfis(self):
+        self.cidadao.is_active = False
+        self.cidadao.save(update_fields=["is_active"])
+        self.client.force_login(self.servidor_sem_permissao)
+
+        resposta = self.client.post(
+            reverse("usuarios_lista:alterar_situacao"),
+            {"acao": "reativar", "usuarios": [self.cidadao.pk]},
+        )
+
+        self.assertRedirects(resposta, self.url)
+        self.cidadao.refresh_from_db()
+        self.assertTrue(self.cidadao.is_active)
+
+    def test_alteracao_em_lote_exige_selecao_e_acao_valida(self):
+        self.client.force_login(self.servidor_sem_permissao)
+
+        resposta = self.client.post(
+            reverse("usuarios_lista:alterar_situacao"),
+            {"acao": "inativar"},
+            follow=True,
+        )
+
+        self.assertContains(resposta, "Selecione ao menos um perfil")
+
     def test_paginacao_numerica_preserva_filtros(self):
         for indice in range(12):
             Usuario.objects.create_user(

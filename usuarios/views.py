@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
 from django.views import View
 from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
@@ -167,6 +168,61 @@ class UsuarioDeactivateView(ServidorMixin, View):
             request,
             _("O perfil de %(nome)s foi inativado.") % {"nome": usuario.nome},
         )
+        return redirect("usuarios_lista:lista")
+
+
+class UsuarioActivateView(ServidorMixin, View):
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
+        usuario = get_object_or_404(
+            Usuario,
+            pk=self.kwargs["pk"],
+            tipo__in=(Usuario.Tipo.CIDADAO, Usuario.Tipo.PROFISSIONAL),
+            is_active=False,
+            is_superuser=False,
+        )
+        usuario.is_active = True
+        usuario.save(update_fields=["is_active"])
+        messages.success(
+            request,
+            _("O perfil de %(nome)s foi reativado.") % {"nome": usuario.nome},
+        )
+        return redirect("usuarios_lista:lista")
+
+
+class UsuarioBulkStatusView(ServidorMixin, View):
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
+        acao = request.POST.get("acao")
+        identificadores = request.POST.getlist("usuarios")
+        if acao not in {"inativar", "reativar"} or not identificadores:
+            messages.warning(
+                request,
+                _("Selecione ao menos um perfil e uma ação válida."),
+            )
+            return redirect("usuarios_lista:lista")
+
+        ativos = acao == "reativar"
+        quantidade = Usuario.objects.filter(
+            pk__in=identificadores,
+            tipo__in=(Usuario.Tipo.CIDADAO, Usuario.Tipo.PROFISSIONAL),
+            is_superuser=False,
+        ).exclude(is_active=ativos).update(is_active=ativos)
+        if ativos:
+            mensagem = ngettext(
+                "%(quantidade)d perfil foi reativado.",
+                "%(quantidade)d perfis foram reativados.",
+                quantidade,
+            ) % {"quantidade": quantidade}
+        else:
+            mensagem = ngettext(
+                "%(quantidade)d perfil foi inativado.",
+                "%(quantidade)d perfis foram inativados.",
+                quantidade,
+            ) % {"quantidade": quantidade}
+        messages.success(request, mensagem)
         return redirect("usuarios_lista:lista")
 
 

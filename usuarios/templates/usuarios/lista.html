@@ -38,11 +38,25 @@
     </form>
   </section>
 
+  <form id="acoes-lote-usuarios" class="bulk-actions" method="post" action="{% url 'usuarios_lista:alterar_situacao' %}">
+    {% csrf_token %}
+    <p>{% trans "Com os perfis selecionados:" %}</p>
+    <div class="form-actions">
+      <button class="button button-danger" type="submit" name="acao" value="inativar">{% trans "Inativar selecionados" %}</button>
+      <button class="button button-secondary" type="submit" name="acao" value="reativar">{% trans "Reativar selecionados" %}</button>
+    </div>
+  </form>
+
   <ul class="record-list" aria-label="{% trans 'Usuários cadastrados' %}">
     {% for usuario in usuarios %}
       <li class="record-card">
         <div class="record-card-heading">
-          <h2>{{ usuario.nome }}</h2>
+          <div class="record-card-selection">
+            {% if usuario.tipo == "CIDADAO" or usuario.tipo == "PROFISSIONAL" %}
+              <input form="acoes-lote-usuarios" type="checkbox" name="usuarios" value="{{ usuario.pk }}" aria-label="{% blocktrans with nome=usuario.nome %}Selecionar {{ nome }}{% endblocktrans %}">
+            {% endif %}
+            <h2>{{ usuario.nome }}</h2>
+          </div>
           {% if usuario.is_active %}
             <span class="status-badge status-active">{% trans "Ativo" %}</span>
           {% else %}
@@ -67,6 +81,11 @@
                 {% csrf_token %}
                 <button class="button button-danger" type="submit">{% trans "Inativar perfil" %}</button>
               </form>
+            {% elif not usuario.is_active and usuario.tipo == "CIDADAO" %}
+              <form method="post" action="{% url 'usuarios_lista:reativar' usuario.pk %}">
+                {% csrf_token %}
+                <button class="button button-secondary" type="submit">{% trans "Reativar perfil" %}</button>
+              </form>
             {% endif %}
           </div>
         {% elif usuario.is_active and usuario.tipo == "PROFISSIONAL" %}
@@ -82,6 +101,10 @@
         {% elif usuario.tipo == "PROFISSIONAL" and usuario.profissional %}
           <div class="record-card-actions">
             <a class="button button-secondary" href="{% url 'usuarios_lista:editar_profissional' usuario.pk %}">{% trans "Editar profissional" %}</a>
+            <form method="post" action="{% url 'usuarios_lista:reativar' usuario.pk %}">
+              {% csrf_token %}
+              <button class="button button-secondary" type="submit">{% trans "Reativar perfil" %}</button>
+            </form>
           </div>
         {% endif %}
       </li>

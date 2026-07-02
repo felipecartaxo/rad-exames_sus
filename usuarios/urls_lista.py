@@ -3,6 +3,8 @@ from django.urls import path
 from .views import (
     ProfissionalUpdateView,
     UsuarioCreateView,
+    UsuarioActivateView,
+    UsuarioBulkStatusView,
     UsuarioDeactivateView,
     UsuarioListView,
     UsuarioUpdateView,
@@ -19,6 +21,16 @@ urlpatterns = [
         "<int:pk>/inativar/",
         UsuarioDeactivateView.as_view(),
         name="inativar",
+    ),
+    path(
+        "<int:pk>/reativar/",
+        UsuarioActivateView.as_view(),
+        name="reativar",
+    ),
+    path(
+        "alterar-situacao/",
+        UsuarioBulkStatusView.as_view(),
+        name="alterar_situacao",
     ),
     path(
         "profissionais/<int:pk>/editar/",
