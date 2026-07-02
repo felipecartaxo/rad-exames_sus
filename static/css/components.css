@@ -202,9 +202,8 @@ button[type="submit"]:hover {
 
 .list-filters {
   width: 100%;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-6);
   padding: var(--space-4);
-  overflow-x: auto;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-background-secondary);
@@ -216,26 +215,19 @@ button[type="submit"]:hover {
 }
 
 .list-filters-form {
-  display: flex;
-  min-width: max-content;
-  align-items: end;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(8rem, 1fr));
   gap: var(--space-3);
 }
 
 .list-filters .form-field {
-  flex: 1 0 11rem;
   margin: 0;
 }
 
-.list-filters .form-field:nth-child(2),
-.list-filters .form-field:nth-child(3) {
-  flex-basis: 13rem;
-}
-
 .list-filters .form-actions {
-  flex: 0 0 auto;
+  grid-column: 1 / -1;
   flex-wrap: nowrap;
-  padding-bottom: 1px;
+  margin-top: var(--space-1);
   white-space: nowrap;
 }
 
@@ -388,7 +380,21 @@ button[type="submit"]:hover {
   color: var(--color-text-disabled);
 }
 
+@media (max-width: 48rem) {
+  .list-filters-form {
+    grid-template-columns: repeat(2, minmax(10rem, 1fr));
+  }
+}
+
 @media (max-width: 40rem) {
+  .list-filters {
+    overflow-x: auto;
+  }
+
+  .list-filters-form {
+    min-width: 34rem;
+  }
+
   .record-card-heading,
   .pagination,
   .page-header-actions {
