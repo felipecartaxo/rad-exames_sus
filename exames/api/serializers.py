@@ -1,8 +1,15 @@
+from django.core.exceptions import ValidationError as DjangoValidationError
+
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
 from exames.models import Exame
-from exames.services import criar_agendamento_exame
+from exames.services import (
+    TRANSICOES_STATUS,
+    criar_agendamento_exame,
+    transicionar_status,
+)
+from exames.validators import validar_documento_resultado
 from rede_saude.models import Profissional, UnidadeSaude
 from usuarios.models import Usuario
 
@@ -112,6 +119,57 @@ class CriacaoExameApiSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         return criar_agendamento_exame(**validated_data)
+
+    def to_representation(self, instance):
+        return ExameSerializer(instance, context=self.context).data
+
+
+class AtualizacaoExameApiSerializer(serializers.Serializer):
+    novo_status = serializers.ChoiceField(choices=Exame.Status.choices)
+    resultado = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        trim_whitespace=True,
+    )
+    documento_resultado = serializers.FileField(
+        required=False,
+        validators=[validar_documento_resultado],
+    )
+
+    def validate(self, attrs):
+        exame = self.instance
+        novo_status = attrs["novo_status"]
+        if novo_status not in TRANSICOES_STATUS.get(exame.status, set()):
+            raise serializers.ValidationError(
+                {"novo_status": "Transição de status não permitida."}
+            )
+        resultado = (attrs.get("resultado") or "").strip()
+        documento = attrs.get("documento_resultado")
+        if novo_status == Exame.Status.RESULTADO_DISPONIVEL:
+            if not resultado:
+                raise serializers.ValidationError(
+                    {"resultado": "Informe o resultado antes de disponibilizá-lo."}
+                )
+            attrs["resultado"] = resultado
+        elif resultado or documento:
+            raise serializers.ValidationError(
+                "Resultado e documento só podem ser enviados ao "
+                "disponibilizar o resultado."
+            )
+        return attrs
+
+    def update(self, instance, validated_data):
+        try:
+            return transicionar_status(
+                instance,
+                validated_data["novo_status"],
+                resultado=validated_data.get("resultado"),
+                documento_resultado=validated_data.get("documento_resultado"),
+            )
+        except DjangoValidationError as erro:
+            if hasattr(erro, "message_dict"):
+                raise serializers.ValidationError(erro.message_dict) from erro
+            raise serializers.ValidationError(erro.messages) from erro
 
     def to_representation(self, instance):
         return ExameSerializer(instance, context=self.context).data

@@ -1031,6 +1031,16 @@ Por enquanto, está autorizado:
 - a data do exame deve ser posterior à data do agendamento;
 - o status inicial é obrigatoriamente `CONFIRMADO`.
 
+### Terceira entrega aprovada
+
+- endpoint: `PATCH /api/v1/exames/<id>/`;
+- somente o profissional responsável com `exames.change_exame` pode atualizar;
+- apenas a próxima transição prevista no fluxo de status é aceita;
+- resultado não vazio é obrigatório ao transicionar para `RESULTADO_DISPONIVEL`;
+- um PDF opcional de até 10 MB pode ser enviado por `multipart/form-data`;
+- atualização de resultado, status, documento e notificação reutiliza o serviço transacional do fluxo HTML;
+- `PUT` não é permitido e campos estruturais do exame não são editáveis.
+
 ### Regras
 
 - não gerar CRUD completo automaticamente para todos os modelos;

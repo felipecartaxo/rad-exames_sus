@@ -6,6 +6,7 @@ from usuarios.models import Usuario
 from .pagination import ExamePageNumberPagination
 from .permissions import ExameApiPermission
 from .serializers import (
+    AtualizacaoExameApiSerializer,
     CriacaoExameApiSerializer,
     ExameSerializer,
     FiltroExameApiSerializer,
@@ -55,5 +56,10 @@ class ExameListApiView(ExameQuerysetMixin, generics.ListCreateAPIView):
         return queryset
 
 
-class ExameDetailApiView(ExameQuerysetMixin, generics.RetrieveAPIView):
-    pass
+class ExameDetailApiView(ExameQuerysetMixin, generics.RetrieveUpdateAPIView):
+    http_method_names = ("get", "patch", "head", "options")
+
+    def get_serializer_class(self):
+        if self.request.method == "PATCH":
+            return AtualizacaoExameApiSerializer
+        return ExameSerializer

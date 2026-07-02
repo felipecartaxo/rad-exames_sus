@@ -55,6 +55,31 @@ Corpo JSON:
 
 Somente cidadãos, unidades e profissionais ativos são aceitos. A data do exame deve ser posterior à data do agendamento.
 
+### Atualizar estado e resultado
+
+`PATCH /api/v1/exames/<id>/`
+
+Disponível somente para o profissional responsável com a permissão `exames.change_exame`. A operação aceita apenas a próxima transição prevista no fluxo de status.
+
+Exemplo de transição para análise:
+
+```json
+{
+  "novo_status": "EM_ANALISE"
+}
+```
+
+Para disponibilizar um resultado:
+
+```json
+{
+  "novo_status": "RESULTADO_DISPONIVEL",
+  "resultado": "Resultado descritivo do exame"
+}
+```
+
+O resultado é obrigatório nessa transição. Um PDF opcional de até 10 MB pode ser enviado usando `multipart/form-data` no campo `documento_resultado`.
+
 ## Escopo atual
 
-Listagem, detalhe e criação estão disponíveis. Atualização e exclusão via API serão avaliadas incrementalmente.
+Listagem, detalhe, criação e atualização do fluxo profissional estão disponíveis. Exclusão via API será avaliada incrementalmente.

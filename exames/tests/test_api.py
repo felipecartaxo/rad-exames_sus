@@ -6,8 +6,10 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from rest_framework.test import APIClient
 
 from exames.models import Agendamento, Exame
+from notificacoes.models import Notificacao
 from rede_saude.models import Profissional, UnidadeSaude
 from usuarios.models import Usuario
 
@@ -59,11 +61,17 @@ class ExameApiTests(TestCase):
             cargo="Médica",
             unidade=cls.unidade,
         )
+        cls.profissional.user_permissions.add(
+            Permission.objects.get(codename="change_exame")
+        )
         cls.outro_profissional = Profissional.objects.create(
             cpf="39053344705",
             nome="Outro profissional",
             cargo="Médico",
             unidade=cls.outra_unidade,
+        )
+        cls.outro_profissional.user_permissions.add(
+            Permission.objects.get(codename="change_exame")
         )
         cls.data_base = timezone.make_aware(
             datetime(2026, 10, 10, 14, 0)
@@ -327,3 +335,124 @@ class ExameApiTests(TestCase):
             Agendamento.objects.count(),
             quantidade_agendamentos,
         )
+
+    def test_profissional_responsavel_atualiza_status(self):
+        exame = self.criar_exame(status=Exame.Status.CONFIRMADO)
+        self.client.force_login(self.profissional)
+
+        resposta = self.client.patch(
+            reverse("api_exames:detalhe", args=[exame.pk]),
+            {"novo_status": Exame.Status.EM_ANALISE},
+            content_type="application/json",
+        )
+
+        self.assertEqual(resposta.status_code, 200)
+        exame.refresh_from_db()
+        self.assertEqual(exame.status, Exame.Status.EM_ANALISE)
+        self.assertEqual(resposta.json()["status"], Exame.Status.EM_ANALISE)
+
+    def test_disponibiliza_resultado_pdf_e_notifica_cidadao(self):
+        exame = self.criar_exame(status=Exame.Status.EM_ANALISE)
+        cliente = APIClient()
+        cliente.force_authenticate(self.profissional)
+
+        resposta = cliente.patch(
+            reverse("api_exames:detalhe", args=[exame.pk]),
+            {
+                "novo_status": Exame.Status.RESULTADO_DISPONIVEL,
+                "resultado": "Resultado do exame",
+                "documento_resultado": SimpleUploadedFile(
+                    "resultado.pdf",
+                    b"%PDF-1.4 documento de teste",
+                    content_type="application/pdf",
+                ),
+            },
+            format="multipart",
+        )
+
+        self.assertEqual(resposta.status_code, 200)
+        exame.refresh_from_db()
+        self.assertEqual(exame.status, Exame.Status.RESULTADO_DISPONIVEL)
+        self.assertEqual(exame.resultado, "Resultado do exame")
+        self.assertTrue(exame.documento_resultado)
+        self.assertIsNotNone(resposta.json()["documento_resultado_url"])
+        self.assertTrue(
+            Notificacao.objects.filter(
+                exame=exame,
+                usuario=self.cidadao,
+            ).exists()
+        )
+
+    def test_resultado_e_obrigatorio_na_transicao_final(self):
+        exame = self.criar_exame(status=Exame.Status.EM_ANALISE)
+        self.client.force_login(self.profissional)
+
+        resposta = self.client.patch(
+            reverse("api_exames:detalhe", args=[exame.pk]),
+            {
+                "novo_status": Exame.Status.RESULTADO_DISPONIVEL,
+                "resultado": "",
+            },
+            content_type="application/json",
+        )
+
+        self.assertEqual(resposta.status_code, 400)
+        self.assertIn("resultado", resposta.json())
+        exame.refresh_from_db()
+        self.assertEqual(exame.status, Exame.Status.EM_ANALISE)
+
+    def test_patch_rejeita_transicao_invalida(self):
+        exame = self.criar_exame(status=Exame.Status.CONFIRMADO)
+        self.client.force_login(self.profissional)
+
+        resposta = self.client.patch(
+            reverse("api_exames:detalhe", args=[exame.pk]),
+            {"novo_status": Exame.Status.RESULTADO_DISPONIVEL},
+            content_type="application/json",
+        )
+
+        self.assertEqual(resposta.status_code, 400)
+        self.assertIn("novo_status", resposta.json())
+
+    def test_patch_exige_profissional_responsavel_com_permissao(self):
+        exame = self.criar_exame(status=Exame.Status.CONFIRMADO)
+        url = reverse("api_exames:detalhe", args=[exame.pk])
+
+        for usuario in (self.cidadao, self.servidor):
+            with self.subTest(usuario=usuario.nome):
+                self.client.force_login(usuario)
+                resposta = self.client.patch(
+                    url,
+                    {"novo_status": Exame.Status.EM_ANALISE},
+                    content_type="application/json",
+                )
+                self.assertEqual(resposta.status_code, 403)
+
+        self.client.force_login(self.outro_profissional)
+        resposta = self.client.patch(
+            url,
+            {"novo_status": Exame.Status.EM_ANALISE},
+            content_type="application/json",
+        )
+        self.assertEqual(resposta.status_code, 404)
+
+        self.profissional.user_permissions.clear()
+        self.client.force_login(self.profissional)
+        resposta = self.client.patch(
+            url,
+            {"novo_status": Exame.Status.EM_ANALISE},
+            content_type="application/json",
+        )
+        self.assertEqual(resposta.status_code, 403)
+
+    def test_put_nao_e_permitido(self):
+        exame = self.criar_exame()
+        self.client.force_login(self.profissional)
+
+        resposta = self.client.put(
+            reverse("api_exames:detalhe", args=[exame.pk]),
+            {},
+            content_type="application/json",
+        )
+
+        self.assertEqual(resposta.status_code, 405)
