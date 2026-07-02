@@ -796,7 +796,7 @@ Não adicione pesquisa, filtros avançados ou exportação como parte deste requ
 
 ### RF004 — Lista de exames do cidadão
 
-O cidadão deve visualizar exames agendados e realizados.
+O cidadão deve visualizar em “Meus exames” somente os exames em andamento, nos estados `CONFIRMADO` e `EM_ANALISE`.
 
 A listagem deve apresentar, no mínimo:
 
@@ -809,7 +809,7 @@ Critérios mínimos:
 
 - mostrar apenas exames do cidadão autenticado;
 - diferenciar status com texto e estilo visual consistente;
-- ordenar de maneira definida e documentada;
+- ordenar do mais recente para o mais antigo;
 - tratar estado vazio;
 - impedir vazamento de exames de outro usuário;
 - possuir testes de consulta, permissão e apresentação dos dados essenciais.
@@ -823,7 +823,7 @@ A funcionalidade de comparação de dados foi descartada e **não deve ser imple
 Critérios mínimos:
 
 - histórico restrito ao cidadão autenticado;
-- exames organizados cronologicamente;
+- exibir todos os exames, independentemente do status, do mais recente para o mais antigo;
 - indicação de tipo, data, unidade, profissional, status e resultado quando disponível;
 - mensagem clara quando o resultado ainda não estiver disponível;
 - estado vazio compreensível;

@@ -117,7 +117,11 @@ class FiltroExameCidadaoForm(forms.Form):
     status = forms.ChoiceField(
         label=_("Status do exame"),
         required=False,
-        choices=(("", _("Todos os status")), *Exame.Status.choices),
+        choices=(
+            ("", _("Todos os status")),
+            (Exame.Status.CONFIRMADO, Exame.Status.CONFIRMADO.label),
+            (Exame.Status.EM_ANALISE, Exame.Status.EM_ANALISE.label),
+        ),
     )
     data_inicio = forms.DateTimeField(
         label=_("Data e horário inicial"),

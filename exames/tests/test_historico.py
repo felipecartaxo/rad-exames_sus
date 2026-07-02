@@ -1,7 +1,9 @@
+import tempfile
 from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -12,6 +14,7 @@ from rede_saude.models import Profissional, UnidadeSaude
 Usuario = get_user_model()
 
 
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
 class ExameHistoricoViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -133,6 +136,27 @@ class ExameHistoricoViewTests(TestCase):
 
         self.assertContains(resposta, "Histórico vazio")
 
+    def test_historico_exibe_download_somente_para_exame_com_anexo(self):
+        com_anexo = self.criar_exame(
+            tipo="Exame com anexo",
+            documento_resultado=SimpleUploadedFile(
+                "resultado.pdf",
+                b"%PDF-1.4 documento de teste",
+                content_type="application/pdf",
+            ),
+        )
+        self.criar_exame(tipo="Exame sem anexo", documento_resultado="")
+        self.client.force_login(self.cidadao)
+
+        resposta = self.client.get(self.url)
+
+        self.assertContains(resposta, "Visualizar anexo do resultado", count=1)
+        self.assertContains(
+            resposta,
+            reverse("exames:documento_resultado", args=[com_anexo.pk]),
+        )
+        self.assertContains(resposta, 'class="record-card-actions"')
+
     def test_historico_ordena_por_data_e_id_decrescentes(self):
         antigo = self.criar_exame(
             tipo="Antigo",
@@ -151,6 +175,26 @@ class ExameHistoricoViewTests(TestCase):
             [recente, antigo],
         )
 
+    def test_historico_exibe_exames_de_todos_os_status(self):
+        exames = [
+            self.criar_exame(
+                tipo=f"Exame {status}",
+                status=status,
+                resultado=(
+                    "Resultado disponível"
+                    if status == Exame.Status.RESULTADO_DISPONIVEL
+                    else ""
+                ),
+            )
+            for status in Exame.Status.values
+        ]
+        self.client.force_login(self.cidadao)
+
+        resposta = self.client.get(self.url)
+
+        for exame in exames:
+            self.assertIn(exame, resposta.context["exames"])
+
     def test_historico_possui_cinco_exames_por_pagina(self):
         for indice in range(7):
             self.criar_exame(
@@ -164,4 +208,3 @@ class ExameHistoricoViewTests(TestCase):
 
         self.assertEqual(len(primeira.context["exames"]), 5)
         self.assertEqual(len(segunda.context["exames"]), 2)
-

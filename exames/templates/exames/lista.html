@@ -53,7 +53,9 @@
           </div>
         </dl>
         {% if exame.documento_resultado %}
-          <a class="button button-secondary" href="{% url 'exames:documento_resultado' exame.pk %}">{% trans "Visualizar anexo do resultado" %}</a>
+          <div class="record-card-actions">
+            <a class="button button-secondary" href="{% url 'exames:documento_resultado' exame.pk %}">{% trans "Visualizar anexo do resultado" %}</a>
+          </div>
         {% endif %}
       </li>
     {% empty %}

@@ -127,8 +127,7 @@ class ExameListViewTests(TestCase):
     def test_lista_exibe_anexo_somente_quando_disponivel(self):
         com_anexo = self.criar_exame(
             tipo="Exame com anexo",
-            status=Exame.Status.RESULTADO_DISPONIVEL,
-            resultado="Resultado disponível.",
+            status=Exame.Status.EM_ANALISE,
             documento_resultado=SimpleUploadedFile(
                 "resultado.pdf",
                 b"%PDF-1.4 documento de teste",
@@ -145,6 +144,50 @@ class ExameListViewTests(TestCase):
             resposta,
             reverse("exames:documento_resultado", args=[com_anexo.pk]),
         )
+        self.assertContains(resposta, 'class="record-card-actions"')
+
+    def test_lista_exibe_apenas_exames_em_andamento(self):
+        confirmado = self.criar_exame(
+            tipo="Confirmado",
+            status=Exame.Status.CONFIRMADO,
+        )
+        em_analise = self.criar_exame(
+            tipo="Em análise",
+            status=Exame.Status.EM_ANALISE,
+        )
+        resultado = self.criar_exame(
+            tipo="Finalizado",
+            status=Exame.Status.RESULTADO_DISPONIVEL,
+            resultado="Disponível",
+        )
+        cancelado = self.criar_exame(
+            tipo="Cancelado",
+            status=Exame.Status.CANCELADO,
+        )
+        self.client.force_login(self.cidadao)
+
+        resposta = self.client.get(self.url)
+
+        self.assertQuerySetEqual(
+            resposta.context["exames"],
+            [em_analise, confirmado],
+            ordered=False,
+        )
+        self.assertNotIn(resultado, resposta.context["exames"])
+        self.assertNotIn(cancelado, resposta.context["exames"])
+
+    def test_filtro_oferece_somente_status_em_andamento(self):
+        self.client.force_login(self.cidadao)
+
+        resposta = self.client.get(self.url)
+        escolhas = dict(
+            resposta.context["form_filtros"].fields["status"].choices
+        )
+
+        self.assertIn(Exame.Status.CONFIRMADO, escolhas)
+        self.assertIn(Exame.Status.EM_ANALISE, escolhas)
+        self.assertNotIn(Exame.Status.RESULTADO_DISPONIVEL, escolhas)
+        self.assertNotIn(Exame.Status.CANCELADO, escolhas)
 
     def test_ordenacao_usa_data_e_id_decrescentes(self):
         antigo = self.criar_exame(

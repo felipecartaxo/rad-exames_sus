@@ -57,7 +57,13 @@ class ExameListView(CidadaoAutenticadoMixin, ListView):
 
     def get_queryset(self):
         queryset = (
-            Exame.objects.filter(usuario=self.request.user)
+            Exame.objects.filter(
+                usuario=self.request.user,
+                status__in=(
+                    Exame.Status.CONFIRMADO,
+                    Exame.Status.EM_ANALISE,
+                ),
+            )
             .select_related("unidade")
         )
         formulario = self.get_form_filtros()

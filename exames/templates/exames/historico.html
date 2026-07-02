@@ -48,6 +48,11 @@
             <p class="result-unavailable">{% trans "Resultado ainda não disponível." %}</p>
           {% endif %}
         </section>
+        {% if exame.documento_resultado %}
+          <div class="record-card-actions">
+            <a class="button button-secondary" href="{% url 'exames:documento_resultado' exame.pk %}">{% trans "Visualizar anexo do resultado" %}</a>
+          </div>
+        {% endif %}
       </li>
     {% empty %}
       <li class="empty-state">
@@ -59,4 +64,3 @@
 
   {% include "components/pagination.html" %}
 {% endblock %}
-

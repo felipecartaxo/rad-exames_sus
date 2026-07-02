@@ -404,3 +404,21 @@ msgstr "Caring for health and valuing every citizen's life."
 
 msgid "Desenvolvedores"
 msgstr "Developers"
+
+msgid "Histórico de exames"
+msgstr "Exam history"
+
+msgid "Histórico organizado dos exames mais recentes para os mais antigos."
+msgstr "Exam history ordered from newest to oldest."
+
+msgid "Histórico de exames do cidadão"
+msgstr "Citizen exam history"
+
+msgid "Resultado ainda não disponível."
+msgstr "Result not available yet."
+
+msgid "Histórico vazio"
+msgstr "Empty history"
+
+msgid "Você ainda não possui exames em seu histórico."
+msgstr "You do not have any exams in your history yet."
